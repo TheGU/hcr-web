@@ -1,0 +1,25 @@
+{
+  "name": "hcr-web",
+  "version": "0.0.1",
+  "description": "Web application for HCR project",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.9.7",
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://bitbucket.org/TheGU/hcr-web.git"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ],
+  "license": "MIT"
+}

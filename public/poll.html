@@ -9,22 +9,29 @@
 </head>
 
 <body ng-controller="PollController">
-    <div class="container">
-        <div class="pull-right" style="margin:10px 0;" align="right">
-            <img src="img/rockefeller%20foundation.jpg" style="height:80px;"><br/>
-            <img src="img/tu.jpg" style="height:80px;">
-        </div>
-        <div class="row">
-            <h1>
-                แบบสำรวจความคิดเห็นของประชาชนต่อโครงการเชื่อมโยงโครงข่ายการคมนาคมขนส่งทางน้ำกับโครงข่ายการคมนาคมขนส่งทางรางมูลนิธิร็อคกี้เฟลเลอร์และมหาวิทยาลัยธรรมศาสตร์ศูนย์รังสิต
-            </h1>
-        </div>
+    <form role="form">
+        <div class="container">
+            <div class="pull-right" style="margin:10px 0;" align="right">
+                <img src="img/rockefeller%20foundation.jpg" style="height:80px;"><br/>
+                <img src="img/tu.jpg" style="height:80px;">
+            </div>
+            <div class="row">
+                <h1>
+                    แบบสำรวจความคิดเห็นของประชาชนต่อโครงการเชื่อมโยงโครงข่ายการคมนาคมขนส่งทางน้ำกับโครงข่ายการคมนาคมขนส่งทางรางมูลนิธิร็อคกี้เฟลเลอร์และมหาวิทยาลัยธรรมศาสตร์ศูนย์รังสิต
+                </h1>
+                <div class="form-inline pull-right">
+                    แบบสอบถามเลขที่ 152
+                    ผู้ตอบแบบสอบถาม
+                    <input type="text" class="form-control" id="poll-user" placeholder="ชื่อผู้ทำแบบสอบถาม">
+                    วันที่ทำแบบสอบถาม
+                    <input type="text" class="form-control" id="poll-date" placeholder="วัน/เดือน/ปี">
+                </div>
+            </div>
 
+            <hr/>
 
-        <div class="row">
-            <div class="container">
-                <form role="form">
-
+            <div class="row">
+                <div class="container">
                     <h3>1. ปัจจุบันท่านใช้พาหนะหลักประเภทใด ในการเดินทางเป็นประจำ</h3>
 
                     <div class="form-group form-inline">
@@ -80,38 +87,47 @@
                                 <fieldset>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" id="poll-2-1-1" value="true"> มีสถานที่ศึกษาอยู่ใน/ใกล้เส้นทาง
+                                            <input type="checkbox" id="poll-2-1-1" value="true">
+                                            มีสถานที่ศึกษาอยู่ใน/ใกล้เส้นทาง
                                         </label>
-                                        <input class="form-control" id="poll-2-1-1-text" type="text" placeholder="โปรดระบุ">
+                                        <input class="form-control" id="poll-2-1-1-text" type="text"
+                                               placeholder="โปรดระบุ">
                                     </div>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" id="poll-2-1-2" value="true"> มีสถานที่พักอาศัยอยู่ใน/ใกล้เส้นทาง
+                                            <input type="checkbox" id="poll-2-1-2" value="true">
+                                            มีสถานที่พักอาศัยอยู่ใน/ใกล้เส้นทาง
                                         </label>
-                                        <input class="form-control" id="poll-2-1-2-text" type="text" placeholder="โปรดระบุ">
+                                        <input class="form-control" id="poll-2-1-2-text" type="text"
+                                               placeholder="โปรดระบุ">
                                     </div>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" id="poll-2-1-3" value="true"> มีสถานที่ทำงานอยู่ใน/ใกล้เส้นทาง
+                                            <input type="checkbox" id="poll-2-1-3" value="true">
+                                            มีสถานที่ทำงานอยู่ใน/ใกล้เส้นทาง
                                         </label>
-                                        <input class="form-control" id="poll-2-1-3-text" type="text" placeholder="โปรดระบุ">
+                                        <input class="form-control" id="poll-2-1-3-text" type="text"
+                                               placeholder="โปรดระบุ">
                                     </div>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" id="poll-2-1-4" value="true"> เป็นเส้นทางที่ใช้ประจำ/บ่อย
+                                            <input type="checkbox" id="poll-2-1-4" value="true">
+                                            เป็นเส้นทางที่ใช้ประจำ/บ่อย
                                         </label>
-                                        <input class="form-control" id="poll-2-1-4-text" type="text" placeholder="โปรดระบุ">
+                                        <input class="form-control" id="poll-2-1-4-text" type="text"
+                                               placeholder="โปรดระบุ">
                                     </div>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
                                             <input type="checkbox" id="poll-2-1-5" value="true"> อื่น ๆ
                                         </label>
-                                        <input class="form-control" id="poll-2-1-5-text" type="text" placeholder="โปรดระบุ">
+                                        <input class="form-control" id="poll-2-1-5-text" type="text"
+                                               placeholder="โปรดระบุ">
                                     </div>
                                 </fieldset>
                             </div>
                         </div>
-                        <hr />
+                        <hr/>
 
                         <div class="row">
                             <div class="col-sm-3">
@@ -123,7 +139,8 @@
                                 <fieldset>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" id="poll-2-2-1" value="true"> ไม่ได้อยู่ในเส้นทางระบบขนส่งทางน้ำ
+                                            <input type="checkbox" id="poll-2-2-1" value="true">
+                                            ไม่ได้อยู่ในเส้นทางระบบขนส่งทางน้ำ
                                         </label>
                                     </div>
                                     <div class="form-inline">
@@ -136,7 +153,8 @@
                                         <label class="checkbox-inline">
                                             <input type="checkbox" id="poll-2-2-3" value="true"> อื่น ๆ
                                         </label>
-                                        <input class="form-control" id="poll-2-2-3-text" type="text" placeholder="โปรดระบุ">
+                                        <input class="form-control" id="poll-2-2-3-text" type="text"
+                                               placeholder="โปรดระบุ">
                                     </div>
                                 </fieldset>
                             </div>
@@ -165,6 +183,7 @@
                     </div>
 
                     <h3>4. ท่านเดินทางด้วยระบบขนส่งทางน้ำช่วงเวลาใด</h3>
+
                     <div class="form-group form-inline">
                         <label class="checkbox-inline">
                             <input type="checkbox" id="poll-4-1" value="true"> 05.30-08.00 น.
@@ -187,104 +206,115 @@
                     <span>เลือกในช่องที่ตรงกับความคิดเห็นของท่าน (ระดับการให้คะแนน 1 ถึง 5 ; โดยที่ 5=มากที่สุด, 1=น้อยที่สุด)</span>
                     <table class="table table-bordered">
                         <thead>
-                        <tr>
-                            <th rowspan="2">สาเหตุที่เลือกเดินทางด้วยระบบคมขนส่งทางน้ำ</th>
-                            <th colspan="5">ระดับความคิดเห็น</th>
-                        </tr>
-                        <tr>
-                            <th>5</th>
-                            <th>4</th>
-                            <th>3</th>
-                            <th>2</th>
-                            <th>1</th>
-                        </tr>
+                            <tr>
+                                <th rowspan="2">สาเหตุที่เลือกเดินทางด้วยระบบคมขนส่งทางน้ำ</th>
+                                <th colspan="5">ระดับความคิดเห็น</th>
+                            </tr>
+                            <tr>
+                                <th>5</th>
+                                <th>4</th>
+                                <th>3</th>
+                                <th>2</th>
+                                <th>1</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>1. ราคาค่าบริการถูก</td>
-                            <td><input type="radio" name="poll-5-1" id="poll-5-1-5" value="poll-5-1-5"></td>
-                            <td><input type="radio" name="poll-5-1" id="poll-5-1-4" value="poll-5-1-4"></td>
-                            <td><input type="radio" name="poll-5-1" id="poll-5-1-3" value="poll-5-1-3"></td>
-                            <td><input type="radio" name="poll-5-1" id="poll-5-1-2" value="poll-5-1-2"></td>
-                            <td><input type="radio" name="poll-5-1" id="poll-5-1-1" value="poll-5-1-1"></td>
-                        </tr>
-                        <tr>
-                            <td>2. การเข้าถึงสถานีสะดวกสบาย</td>
-                            <td><input type="radio" name="poll-5-2" id="poll-5-2-5" value="poll-5-2-5"></td>
-                            <td><input type="radio" name="poll-5-2" id="poll-5-2-4" value="poll-5-2-4"></td>
-                            <td><input type="radio" name="poll-5-2" id="poll-5-2-3" value="poll-5-2-3"></td>
-                            <td><input type="radio" name="poll-5-2" id="poll-5-2-2" value="poll-5-2-2"></td>
-                            <td><input type="radio" name="poll-5-2" id="poll-5-2-1" value="poll-5-2-1"></td>
-                        </tr>
-                        <tr>
-                            <td>3. มีเส้นทางเชื่อมต่อกับระบบขนส่งมวลชนอื่นๆ</td>
-                            <td><input type="radio" name="poll-5-3" id="poll-5-3-5" value="poll-5-3-5"></td>
-                            <td><input type="radio" name="poll-5-3" id="poll-5-3-4" value="poll-5-3-4"></td>
-                            <td><input type="radio" name="poll-5-3" id="poll-5-3-3" value="poll-5-3-3"></td>
-                            <td><input type="radio" name="poll-5-3" id="poll-5-3-2" value="poll-5-3-2"></td>
-                            <td><input type="radio" name="poll-5-3" id="poll-5-3-1" value="poll-5-3-1"></td>
-                        </tr>
-                        <tr>
-                            <td>4. อยู่ใกล้สถานที่ศึกษา/ทำงาน</td>
-                            <td><input type="radio" name="poll-5-4" id="poll-5-4-5" value="poll-5-4-5"></td>
-                            <td><input type="radio" name="poll-5-4" id="poll-5-4-4" value="poll-5-4-4"></td>
-                            <td><input type="radio" name="poll-5-4" id="poll-5-4-3" value="poll-5-4-3"></td>
-                            <td><input type="radio" name="poll-5-4" id="poll-5-4-2" value="poll-5-4-2"></td>
-                            <td><input type="radio" name="poll-5-4" id="poll-5-4-1" value="poll-5-4-1"></td>
-                        </tr>
-                        <tr>
-                            <td>5. อยู่ใกล้สถานที่ช้อปปิ้ง เที่ยวพักผ่อน และพื้นที่ด้านการทำธุรกรรมต่างๆ</td>
-                            <td><input type="radio" name="poll-5-5" id="poll-5-5-5" value="poll-5-5-5"></td>
-                            <td><input type="radio" name="poll-5-5" id="poll-5-5-4" value="poll-5-5-4"></td>
-                            <td><input type="radio" name="poll-5-5" id="poll-5-5-3" value="poll-5-5-3"></td>
-                            <td><input type="radio" name="poll-5-5" id="poll-5-5-2" value="poll-5-5-2"></td>
-                            <td><input type="radio" name="poll-5-5" id="poll-5-5-1" value="poll-5-5-1"></td>
-                        </tr>
-                        <tr>
-                            <td>6. สามารถกำหนดเวลาในการเดินทางได้</td>
-                            <td><input type="radio" name="poll-5-6" id="poll-5-6-5" value="poll-5-6-5"></td>
-                            <td><input type="radio" name="poll-5-6" id="poll-5-6-4" value="poll-5-6-4"></td>
-                            <td><input type="radio" name="poll-5-6" id="poll-5-6-3" value="poll-5-6-3"></td>
-                            <td><input type="radio" name="poll-5-6" id="poll-5-6-2" value="poll-5-6-2"></td>
-                            <td><input type="radio" name="poll-5-6" id="poll-5-6-1" value="poll-5-6-1"></td>
-                        </tr>
-                        <tr>
-                            <td>7. พนักงานดูแล เอาใจใส่ และให้ความช่วยเหลือผู้ใช้บริการดี</td>
-                            <td><input type="radio" name="poll-5-7" id="poll-5-7-5" value="poll-5-7-5"></td>
-                            <td><input type="radio" name="poll-5-7" id="poll-5-7-4" value="poll-5-7-4"></td>
-                            <td><input type="radio" name="poll-5-7" id="poll-5-7-3" value="poll-5-7-3"></td>
-                            <td><input type="radio" name="poll-5-7" id="poll-5-7-2" value="poll-5-7-2"></td>
-                            <td><input type="radio" name="poll-5-7" id="poll-5-7-1" value="poll-5-7-1"></td>
-                        </tr>
-                        <tr>
-                            <td>8. สภาพเรือสะอาดและปลอดภัย</td>
-                            <td><input type="radio" name="poll-5-8" id="poll-5-8-5" value="poll-5-8-5"></td>
-                            <td><input type="radio" name="poll-5-8" id="poll-5-8-4" value="poll-5-8-4"></td>
-                            <td><input type="radio" name="poll-5-8" id="poll-5-8-3" value="poll-5-8-3"></td>
-                            <td><input type="radio" name="poll-5-8" id="poll-5-8-2" value="poll-5-8-2"></td>
-                            <td><input type="radio" name="poll-5-8" id="poll-5-8-1" value="poll-5-8-1"></td>
-                        </tr>
-                        <tr>
-                            <td>9. มีระบบการรักษาความปลอดภัยที่เข้มงวด</td>
-                            <td><input type="radio" name="poll-5-9" id="poll-5-9-5" value="poll-5-9-5"></td>
-                            <td><input type="radio" name="poll-5-9" id="poll-5-9-4" value="poll-5-9-4"></td>
-                            <td><input type="radio" name="poll-5-9" id="poll-5-9-3" value="poll-5-9-3"></td>
-                            <td><input type="radio" name="poll-5-9" id="poll-5-9-2" value="poll-5-9-2"></td>
-                            <td><input type="radio" name="poll-5-9" id="poll-5-9-1" value="poll-5-9-1"></td>
-                        </tr>
-                        <tr>
-                            <td>10. อื่นๆ <input class="form-control" id="poll-5-10-text" type="text" placeholder="โปรดระบุ"></td>
-                            <td><input type="radio" name="poll-5-10" id="poll-5-10-5" value="poll-5-10-5"></td>
-                            <td><input type="radio" name="poll-5-10" id="poll-5-10-4" value="poll-5-10-4"></td>
-                            <td><input type="radio" name="poll-5-10" id="poll-5-10-3" value="poll-5-10-3"></td>
-                            <td><input type="radio" name="poll-5-10" id="poll-5-10-2" value="poll-5-10-2"></td>
-                            <td><input type="radio" name="poll-5-10" id="poll-5-10-1" value="poll-5-10-1"></td>
-                        </tr>
+                            <tr>
+                                <td>1. ราคาค่าบริการถูก</td>
+                                <td><input type="radio" name="poll-5-1" id="poll-5-1-5" value="poll-5-1-5"></td>
+                                <td><input type="radio" name="poll-5-1" id="poll-5-1-4" value="poll-5-1-4"></td>
+                                <td><input type="radio" name="poll-5-1" id="poll-5-1-3" value="poll-5-1-3"></td>
+                                <td><input type="radio" name="poll-5-1" id="poll-5-1-2" value="poll-5-1-2"></td>
+                                <td><input type="radio" name="poll-5-1" id="poll-5-1-1" value="poll-5-1-1"></td>
+                            </tr>
+                            <tr>
+                                <td>2. การเข้าถึงสถานีสะดวกสบาย</td>
+                                <td><input type="radio" name="poll-5-2" id="poll-5-2-5" value="poll-5-2-5"></td>
+                                <td><input type="radio" name="poll-5-2" id="poll-5-2-4" value="poll-5-2-4"></td>
+                                <td><input type="radio" name="poll-5-2" id="poll-5-2-3" value="poll-5-2-3"></td>
+                                <td><input type="radio" name="poll-5-2" id="poll-5-2-2" value="poll-5-2-2"></td>
+                                <td><input type="radio" name="poll-5-2" id="poll-5-2-1" value="poll-5-2-1"></td>
+                            </tr>
+                            <tr>
+                                <td>3. มีเส้นทางเชื่อมต่อกับระบบขนส่งมวลชนอื่นๆ</td>
+                                <td><input type="radio" name="poll-5-3" id="poll-5-3-5" value="poll-5-3-5"></td>
+                                <td><input type="radio" name="poll-5-3" id="poll-5-3-4" value="poll-5-3-4"></td>
+                                <td><input type="radio" name="poll-5-3" id="poll-5-3-3" value="poll-5-3-3"></td>
+                                <td><input type="radio" name="poll-5-3" id="poll-5-3-2" value="poll-5-3-2"></td>
+                                <td><input type="radio" name="poll-5-3" id="poll-5-3-1" value="poll-5-3-1"></td>
+                            </tr>
+                            <tr>
+                                <td>4. อยู่ใกล้สถานที่ศึกษา/ทำงาน</td>
+                                <td><input type="radio" name="poll-5-4" id="poll-5-4-5" value="poll-5-4-5"></td>
+                                <td><input type="radio" name="poll-5-4" id="poll-5-4-4" value="poll-5-4-4"></td>
+                                <td><input type="radio" name="poll-5-4" id="poll-5-4-3" value="poll-5-4-3"></td>
+                                <td><input type="radio" name="poll-5-4" id="poll-5-4-2" value="poll-5-4-2"></td>
+                                <td><input type="radio" name="poll-5-4" id="poll-5-4-1" value="poll-5-4-1"></td>
+                            </tr>
+                            <tr>
+                                <td>5. อยู่ใกล้สถานที่ช้อปปิ้ง เที่ยวพักผ่อน และพื้นที่ด้านการทำธุรกรรมต่างๆ</td>
+                                <td><input type="radio" name="poll-5-5" id="poll-5-5-5" value="poll-5-5-5"></td>
+                                <td><input type="radio" name="poll-5-5" id="poll-5-5-4" value="poll-5-5-4"></td>
+                                <td><input type="radio" name="poll-5-5" id="poll-5-5-3" value="poll-5-5-3"></td>
+                                <td><input type="radio" name="poll-5-5" id="poll-5-5-2" value="poll-5-5-2"></td>
+                                <td><input type="radio" name="poll-5-5" id="poll-5-5-1" value="poll-5-5-1"></td>
+                            </tr>
+                            <tr>
+                                <td>6. สามารถกำหนดเวลาในการเดินทางได้</td>
+                                <td><input type="radio" name="poll-5-6" id="poll-5-6-5" value="poll-5-6-5"></td>
+                                <td><input type="radio" name="poll-5-6" id="poll-5-6-4" value="poll-5-6-4"></td>
+                                <td><input type="radio" name="poll-5-6" id="poll-5-6-3" value="poll-5-6-3"></td>
+                                <td><input type="radio" name="poll-5-6" id="poll-5-6-2" value="poll-5-6-2"></td>
+                                <td><input type="radio" name="poll-5-6" id="poll-5-6-1" value="poll-5-6-1"></td>
+                            </tr>
+                            <tr>
+                                <td>7. พนักงานดูแล เอาใจใส่ และให้ความช่วยเหลือผู้ใช้บริการดี</td>
+                                <td><input type="radio" name="poll-5-7" id="poll-5-7-5" value="poll-5-7-5"></td>
+                                <td><input type="radio" name="poll-5-7" id="poll-5-7-4" value="poll-5-7-4"></td>
+                                <td><input type="radio" name="poll-5-7" id="poll-5-7-3" value="poll-5-7-3"></td>
+                                <td><input type="radio" name="poll-5-7" id="poll-5-7-2" value="poll-5-7-2"></td>
+                                <td><input type="radio" name="poll-5-7" id="poll-5-7-1" value="poll-5-7-1"></td>
+                            </tr>
+                            <tr>
+                                <td>8. สภาพเรือสะอาดและปลอดภัย</td>
+                                <td><input type="radio" name="poll-5-8" id="poll-5-8-5" value="poll-5-8-5"></td>
+                                <td><input type="radio" name="poll-5-8" id="poll-5-8-4" value="poll-5-8-4"></td>
+                                <td><input type="radio" name="poll-5-8" id="poll-5-8-3" value="poll-5-8-3"></td>
+                                <td><input type="radio" name="poll-5-8" id="poll-5-8-2" value="poll-5-8-2"></td>
+                                <td><input type="radio" name="poll-5-8" id="poll-5-8-1" value="poll-5-8-1"></td>
+                            </tr>
+                            <tr>
+                                <td>9. มีระบบการรักษาความปลอดภัยที่เข้มงวด</td>
+                                <td><input type="radio" name="poll-5-9" id="poll-5-9-5" value="poll-5-9-5"></td>
+                                <td><input type="radio" name="poll-5-9" id="poll-5-9-4" value="poll-5-9-4"></td>
+                                <td><input type="radio" name="poll-5-9" id="poll-5-9-3" value="poll-5-9-3"></td>
+                                <td><input type="radio" name="poll-5-9" id="poll-5-9-2" value="poll-5-9-2"></td>
+                                <td><input type="radio" name="poll-5-9" id="poll-5-9-1" value="poll-5-9-1"></td>
+                            </tr>
+                            <tr>
+                                <td>10. อื่นๆ <input class="form-control" id="poll-5-10-text" type="text"
+                                                     placeholder="โปรดระบุ"></td>
+                                <td><input type="radio" name="poll-5-10" id="poll-5-10-5" value="poll-5-10-5"></td>
+                                <td><input type="radio" name="poll-5-10" id="poll-5-10-4" value="poll-5-10-4"></td>
+                                <td><input type="radio" name="poll-5-10" id="poll-5-10-3" value="poll-5-10-3"></td>
+                                <td><input type="radio" name="poll-5-10" id="poll-5-10-2" value="poll-5-10-2"></td>
+                                <td><input type="radio" name="poll-5-10" id="poll-5-10-1" value="poll-5-10-1"></td>
+                            </tr>
                         </tbody>
                     </table>
 
                     <h3>6. รูปแบบการเดินทางของท่านในปัจจุบัน</h3>
+
                     <div class="row">
+                        <div class="form-group form-inline">
+                            จุดเริ่มต้นการเดินทาง
+                            <input type="text" class="form-control" id="poll-6-1-start" placeholder="จุดเริ่มต้น">
+                        </div>
+                        <div class="form-group form-inline">
+                            จุดสิ้นสุดการเดินทาง
+                            <input type="text" class="form-control" id="poll-6-1-stop" placeholder="จุดสิ้นสุด">
+                        </div>
+                        
                         <div google-map="exp"
                              center="map.center"
                              zoom="map.zoom"
@@ -295,6 +325,7 @@
                              options="map.options"
                              pan="true"
                              control="map.control"
+                             style="margin:10px;"
                                 >
 
                             <polyline ng-repeat="p in map.polylines" path="p.path" stroke="p.stroke" visible='p.visible'
@@ -313,20 +344,22 @@
                             </markers>
 
                         </div>
-                          <div class="form-group form-inline">
+                        <div class="form-group form-inline">
                             ระยะเวลาในการเดินทาง
                             <input type="text" class="form-control" id="poll-6-2" placeholder="ระยะทาง">
                             กิโลเมตร/เที่ยว
-                          </div>
-                          <div class="form-group form-inline">
+                        </div>
+                        <div class="form-group form-inline">
                             ค่าใช้จ่ายในการเดินทาง
                             <input type="text" class="form-control" id="poll-6-3" placeholder="จำนวนเงิน">
                             บาท/วัน
-                          </div>                            
+                        </div>
                     </div>
 
-                    <h3>7. หากมีการเชื่อมต่อระบบคมนาคมขนส่งทางน้ำกับระบบราง ปัจจัยใดจะทำให้ท่านเปลี่ยนมาใช้การคมนาคมขนส่งทางน้ำ 
+                    <h3>7. หากมีการเชื่อมต่อระบบคมนาคมขนส่งทางน้ำกับระบบราง
+                        ปัจจัยใดจะทำให้ท่านเปลี่ยนมาใช้การคมนาคมขนส่งทางน้ำ
                         (กรุณาเลือกปัจจัยที่สำคัญที่สุดเพียง 1 ข้อ)</h3>
+
                     <div class="form-group form-inline">
                         <label class="checkbox-inline">
                             <input type="checkbox" id="poll-7-1" value="true"> ราคาที่ถูกลง
@@ -335,33 +368,34 @@
                             <input type="checkbox" id="poll-7-2" value="true"> เวลาเดินทางที่น้อยลง
                         </label>
                         <label class="checkbox-inline">
-                            <input type="checkbox" id="poll-7-3" value="true"> ความสะดวกที่เพิ่มขึ้น	
+                            <input type="checkbox" id="poll-7-3" value="true"> ความสะดวกที่เพิ่มขึ้น
                         </label>
                         <label class="checkbox-inline">
                             <input type="checkbox" id="poll-7-4" value="true"> ความสบายที่เพิ่มขึ้น
                         </label>
                         <label class="checkbox-inline">
-                            <input type="checkbox" id="poll-7-5" value="true"> ความปลอดภัยที่เพิ่มขึ้น 
+                            <input type="checkbox" id="poll-7-5" value="true"> ความปลอดภัยที่เพิ่มขึ้น
                         </label>
                         <label class="checkbox-inline">
                             <input type="checkbox" id="poll-7-6" value="true"> อื่นๆ
                         </label>
-                        <input class="form-control" id="poll-7-6-text" type="text" placeholder="โปรดระบุ">                        
+                        <input class="form-control" id="poll-7-6-text" type="text" placeholder="โปรดระบุ">
                     </div>
 
 
                     <button type="submit" class="btn btn-lg btn-primary">Submit</button>
                     <button type="cancel" class="btn btn-lg btn-default">Reset</button>
-                </form>
+
+                </div>
+            </div>
+
+            <hr/>
+            <div style="margin:10px 0; vertical-align:middle;" align="center">
+                <img src="img/rockefeller%20foundation.jpg">
+                <img src="img/tu.jpg">
             </div>
         </div>
-        
-        <hr />
-        <div style="margin:10px 0; vertical-align:middle;" align="center">
-            <img src="img/rockefeller%20foundation.jpg" >
-            <img src="img/tu.jpg">
-        </div>        
-    </div>
+    </form>
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script src='//maps.googleapis.com/maps/api/js?sensor=false&libraries=geometry'></script>

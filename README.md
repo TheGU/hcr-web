@@ -2,7 +2,7 @@
 
 ## Running Locally
 
-Make sure you have [Node.js](http://nodejs.org/) installed.
+Make sure you have [Node.js](http://nodejs.org/) and [mongodb](http://www.mongodb.org/) installed.
 
 ```sh
 $ git clone git@bitbucket.org:TheGU/hcr-web.git

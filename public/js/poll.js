@@ -56,6 +56,7 @@ function PollController($scope, $filter, $timeout, $log, $http, Logger) {
                 $scope.status_msg = 'Error: ' + data;
 			});        
     };
+    
     $scope.resetPoll = function(){
         $scope.poll = {
             poll_date: $filter('date')(new Date, 'yyyy-MM-dd')

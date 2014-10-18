@@ -6,7 +6,11 @@ var mongoose = require('mongoose'); // mongoose for mongodb
 //var morgan = require('morgan'); // log requests to the console (express4)
 
 // Config =================
-mongoose.connect('mongodb://localhost:27017/hcr'); // connect to mongoDB database
+app.set('port', (process.env.PORT || 5000))
+var dbUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost:27017/hcr';
+
+mongoose.connect(dbUri); // connect to mongoDB database
+
 // poll model =================
 var PollSchema = new mongoose.Schema({
         poll_user : { type: String, default: '' },
@@ -105,7 +109,7 @@ app.post('/api/poll', function(req, res) {
 })
 
 // Server =================
-var server = app.listen(5000, function () {
+var server = app.listen(app.get('port'), function() {
   var host = server.address().address
   var port = server.address().port
   console.log('HCR app is running at http://%s:%s', host, port)

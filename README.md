@@ -14,3 +14,5 @@ $ npm start
 Your app should now be running on [localhost:5000](http://localhost:5000/).
 
 Poll form : [localhost:5000/poll](http://localhost:5000/poll)
+
+To test app on heroku [hcr-web.herokuapp.com](http://hcr-web.herokuapp.com/)

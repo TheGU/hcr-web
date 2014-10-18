@@ -2,12 +2,14 @@
   "name": "hcr-web",
   "version": "0.0.1",
   "description": "Web application for HCR project",
+  "author": "Pattapong J.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.9.7"
+    "express": "~4.9.7",
+    "mongoose": "^3.8.17"
   },
   "engines": {
     "node": "0.10.x"

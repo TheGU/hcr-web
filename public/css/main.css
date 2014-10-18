@@ -1,0 +1,14 @@
+.angular-google-map-container {
+    width: 100%;
+    height: 400px;
+}
+
+.angular-google-map {
+  display: block;
+  }
+
+.labelMarker {
+    font-size: 12px;
+    font-weight: bold;
+    background-color:#FFF;
+}

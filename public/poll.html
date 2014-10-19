@@ -308,41 +308,44 @@
                         <div class="form-group form-inline">
                             จุดเริ่มต้นการเดินทาง
                             <input type="text" class="form-control" id="poll-6-1-start" ng-model="poll.poll_6_1_start" placeholder="จุดเริ่มต้น">
+                            <button type="button" class="btn btn-success" ng-click="setStartMarker()">เลือกจากแผนที่</button>
+                            {{ start_marker.coords }}
                         </div>
                         <div class="form-group form-inline">
                             จุดสิ้นสุดการเดินทาง
                             <input type="text" class="form-control" id="poll-6-1-stop" ng-model="poll.poll_6_1_stop" placeholder="จุดสิ้นสุด">
+                            <button type="button" class="btn btn-danger" ng-click="setStopMarker()">เลือกจากแผนที่</button>
+                            {{ stop_marker.coords }}
                         </div>
                         
-                        <div google-map="exp"
-                             center="map.center"
-                             zoom="map.zoom"
-                             draggable="true"
-                             dragging="map.dragging"
-                             bounds="map.bounds"
-                             events="map.events"
-                             options="map.options"
-                             pan="true"
-                             control="map.control"
-                             style="margin:10px;"
-                                >
-
-                            <polyline ng-repeat="p in map.polylines" path="p.path" stroke="p.stroke" visible='p.visible'
-                                      geodesic='p.geodesic' fit="false" editable="p.editable" draggable="p.draggable"
-                                      icons='p.icons'></polyline>
-
-                            <markers
-                                    models='dataMarkers'
-                                    coords="'self'"
-                                    options="'options'"
-                                    click="'onClickedMarker'"
-                                    events='markersEvents'
-                                    isLabel='true'
-
-                                    >
-                            </markers>
-
-                        </div>
+                        <ui-gmap-google-map
+                            center="map.center"
+                            zoom="map.zoom"
+                            draggable="true"
+                            dragging="map.dragging"
+                            bounds="map.bounds"
+                            events="map.events"
+                            options="map.options"
+                            pan="true"
+                            control="map.control"
+                            style="margin:10px;"
+                            >
+                            <ui-gmap-marker coords="start_marker.coords" 
+                                            options="start_marker.options" 
+                                            events="start_marker.events" 
+                                            idkey="start-point"
+                                            icon="start_marker.icon"
+                                            >
+                            </ui-gmap-marker>
+                            <ui-gmap-marker coords="stop_marker.coords" 
+                                            options="stop_marker.options" 
+                                            events="stop_marker.events" 
+                                            idkey="stop-point"
+                                            icon="stop_marker.icon"
+                                            >
+                            </ui-gmap-marker>                            
+                        </ui-gmap-google-map>    
+                        
                         <div class="form-group form-inline">
                             ระยะเวลาในการเดินทาง
                             <input type="text" class="form-control" id="poll-6-2" ng-model="poll.poll_6_2" placeholder="ระยะทาง">
@@ -397,12 +400,13 @@
         </div>
     </form>
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-    <script src='//maps.googleapis.com/maps/api/js?sensor=false&libraries=geometry'></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
-    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js" type="text/javascript"></script>
+    <script src='//maps.googleapis.com/maps/api/js?sensor=false&libraries=geometry' type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js" type="text/javascript"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js" type="text/javascript"></script>
-    <script src="js/vendor/angular-google-maps.min.js"></script>
+    <script src="js/vendor/bootstrap.min.js" type="text/javascript"></script>    
+    <script src="js/vendor/bluebird-2.3.6.js" type="text/javascript"></script>
+    <script src="js/vendor/angular-google-maps-2.0.1.min.js" type="text/javascript"></script>
     <script src="js/poll.js"></script>
 </body>
 

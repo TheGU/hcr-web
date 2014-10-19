@@ -54,8 +54,8 @@ var PollSchema = new mongoose.Schema({
         poll_5_10: { type: String, default: 0 },
         poll_5_10_text: { type: String, default: '' },
     
-        poll_6_1_start: { type: String, default: '' },  //{type: [Number], index: '2d'},
-        poll_6_1_stop: { type: String, default: '' }, //{type: [Number], index: '2d'},
+        poll_6_1_start: { 'type': { type: String, default: "Point" }, coordinates: {type: [Number], index: '2dsphere'}},
+        poll_6_1_stop: { 'type': { type: String, default: "Point" }, coordinates: {type: [Number], index: '2dsphere'}}, 
         poll_6_2: { type: String, default: 0 },
         poll_6_3: { type: String, default: 0 },
     

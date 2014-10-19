@@ -305,17 +305,19 @@
                     <h3>6. รูปแบบการเดินทางของท่านในปัจจุบัน</h3>
 
                     <div class="row">
+                        <p>เลื่อนแผนที่ไปยังบริเวณที่ต้องการ จากนั้นกดปุ่ม "เลือกจากแผนที่" เพื่อปักหมุดยังกึ่งกลางแผนที่ที่ได้เลือกไว้</p>
+                        <p>เมื่อหมุดแสดงบนแผนที่แล้ว สามารถลากหมุดไปยังตำแหน่งที่ต้องการเพื่อเปลี่ยนตำแหน่งได้</p>
                         <div class="form-group form-inline">
                             จุดเริ่มต้นการเดินทาง
-                            <input type="text" class="form-control" id="poll-6-1-start" ng-model="poll.poll_6_1_start" placeholder="จุดเริ่มต้น">
+                            <input type="text" class="form-control" id="poll-6-1-start" ng-model="poll.poll_6_1_start.coordinates" placeholder="จุดเริ่มต้น">
                             <button type="button" class="btn btn-success" ng-click="setStartMarker()">เลือกจากแผนที่</button>
-                            {{ start_marker.coords }}
+                            {{ start_marker.description }}
                         </div>
                         <div class="form-group form-inline">
                             จุดสิ้นสุดการเดินทาง
-                            <input type="text" class="form-control" id="poll-6-1-stop" ng-model="poll.poll_6_1_stop" placeholder="จุดสิ้นสุด">
+                            <input type="text" class="form-control" id="poll-6-1-stop" ng-model="poll.poll_6_1_stop.coordinates" placeholder="จุดสิ้นสุด">
                             <button type="button" class="btn btn-danger" ng-click="setStopMarker()">เลือกจากแผนที่</button>
-                            {{ stop_marker.coords }}
+                            {{ stop_marker.description }}
                         </div>
                         
                         <ui-gmap-google-map

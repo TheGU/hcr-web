@@ -1,5 +1,5 @@
 angular.module('hcr-poll-collector', ['google-maps'.ns()])
-  .controller('PollController', function ($scope, $filter, $log, $timeout) {
+  .controller('PollController', function ($scope, $filter, $log, $timeout, $http) {
       
     $scope.status_msg = "";
     $scope.poll = {
@@ -32,19 +32,7 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
 
                 },
                 click: function (mapModel, eventName, originalEventArgs) {
-                    // 'this' is the directive's scope
-                    $log.log("user defined event: " + eventName, mapModel, originalEventArgs);
 
-                    var e = originalEventArgs[0];
-                    var lat = e.latLng.lat(),
-                        lon = e.latLng.lng();
-                    $scope.clickInfo = {
-                        id: 0,
-                        title: 'Clicked here ' + 'lat: ' + lat + ' lon: ' + lon,
-                        latitude: lat,
-                        longitude: lon
-                    };
-                    $scope.$apply();
                 },
                 dragend: function () {
                     self = this;
@@ -56,13 +44,22 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
     // Marker control --------------------------
     $scope.start_marker = {};
     $scope.$watchCollection("start_marker.coords", function (newVal, oldVal) {
-      if (_.isEqual(newVal, oldVal))
+      if (_.isEqual(newVal, oldVal) || _.isEmpty(newVal))
         return;
-      $scope.coordsUpdates++;
+      $scope.poll.poll_6_1_start.coordinates = [ newVal.longitude, newVal.latitude ];
+      $http.get('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + newVal.latitude + ',' + newVal.longitude + '&sensor=true')			    .success(function(data) {
+				$log.log(data);
+                $scope.start_marker.description = data.results[0].formatted_address;
+			})
+			.error(function(data) {
+				$log.log('Error: ' + data);
+			});     
     });
     $scope.setStartMarker = function(){
+        $scope.poll.poll_6_1_start = {type:'Point',coordinates: []};
         $scope.start_marker = {
           id: 0,
+          description: '',
           coords: {
             latitude: $scope.map.center.latitude, 
             longitude: $scope.map.center.longitude
@@ -78,7 +75,7 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
             dragend: function (marker, eventName, args) {
               var lat = marker.getPosition().lat();
               var lon = marker.getPosition().lng();
-              $log.log('start marker dragend ' + lat + ',' + lon);
+              $log.log('start marker dragend ' + lat + ',' + lon);              
             }
           }
         };        
@@ -86,13 +83,22 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
       
     $scope.stop_marker = {};
     $scope.$watchCollection("stop_marker.coords", function (newVal, oldVal) {
-      if (_.isEqual(newVal, oldVal))
+      if (_.isEqual(newVal, oldVal) || _.isEmpty(newVal))
         return;
-      $scope.coordsUpdates++;
+      $scope.poll.poll_6_1_stop.coordinates = [ newVal.longitude, newVal.latitude ];
+      $http.get('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + newVal.latitude + ',' + newVal.longitude + '&sensor=true')			    .success(function(data) {
+				$log.log(data);
+                $scope.stop_marker.description = data.results[0].formatted_address;
+			})
+			.error(function(data) {
+				$log.log('Error: ' + data);
+			});     
     });
     $scope.setStopMarker = function(){    
+        $scope.poll.poll_6_1_stop = {type:'Point',coordinates: []};
         $scope.stop_marker = {
           id: 1,
+          description: '',
           coords: {
             latitude: $scope.map.center.latitude, 
             longitude: $scope.map.center.longitude
@@ -108,7 +114,7 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
             dragend: function (marker, eventName, args) {
               var lat = marker.getPosition().lat();
               var lon = marker.getPosition().lng();
-              $log.log('หะนย marker dragend ' + lat + ',' + lon);
+              $log.log('stop marker dragend ' + lat + ',' + lon);
             }
           }
         };          
@@ -116,20 +122,17 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
             
     // Submit and cancel form -------------------------
     $scope.submitPoll = function(){
-        $scope.status_msg = "Saving ... ";
-        console.log('Submit: ' + $scope.poll);
-        
+        $scope.status_msg = "Saving ... ";   
+        $log.log($scope.poll);
 		$http.post('/api/poll', $scope.poll)
 			.success(function(data) {
-                $scope.poll = {
-                    poll_date: $filter('date')(new Date, 'yyyy-MM-dd')
-                }; // clear the form so our user is ready to enter another
+                $scope.resetPoll();
 				$scope.status = data;
-				console.log(data);
+				$log.log(data);
                 $scope.status_msg = "Done";
 			})
 			.error(function(data) {
-				console.log('Error: ' + data);
+				$log.log('Error: ' + data);
                 $scope.status_msg = 'Error: ' + data;
 			});        
     };
@@ -138,6 +141,8 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
         $scope.poll = {
             poll_date: $filter('date')(new Date, 'yyyy-MM-dd')
         };     
+        $scope.stop_marker = {};
+        $scope.start_marker = {};
     };         
   
   });

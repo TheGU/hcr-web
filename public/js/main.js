@@ -236,7 +236,6 @@ function MapController($scope, $timeout, $log, $http, Logger) {
             markers.push(createMarker(path[i].id, path[i].latitude, path[i].longitude));
         }
         $scope.dataMarkers = markers;
-        $scope.$apply();
         return;
     };
     genMarkerFromPath(polylinesPath);

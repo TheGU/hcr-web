@@ -27,6 +27,10 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
+app.get('/path', function (req, res) {
+    res.sendFile(__dirname + '/public/path.html');
+});
+
 app.get('/poll', function (req, res) {
     res.sendFile(__dirname + '/public/poll.html');
 });

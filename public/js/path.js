@@ -6,7 +6,30 @@ function MapController($scope, $localStorage, $filter, $log, $timeout, $http) {
 
     // Enable the new Google Maps visuals until it gets enabled by default.
     // See http://googlegeodevelopers.blogspot.ca/2013/05/a-fresh-new-look-for-maps-api-for-all.html
-    google.maps.visualRefresh = true;
+    // google.maps.visualRefresh = true;
+
+    var path_dummy = {
+        id: 9999,
+        name: "dummy",
+        dummy:true,
+        path: [
+            // fix engine bug that not render polyline if path is empty or not valid
+            // set valid information some where then delete it later after get a real first point 
+            {
+                dummy:true,
+                latitude: 0,
+                longitude: 0
+            }                        
+        ],
+        stroke: {
+            color: '#000',
+            weight: 3
+        },
+        editable: false,
+        draggable: false,
+        geodesic: true,
+        visible: true
+    };
 
     $scope.$storage = $localStorage.$default({
         runningId: 0,
@@ -32,7 +55,7 @@ function MapController($scope, $localStorage, $filter, $log, $timeout, $http) {
             draggable: true,
             pan: true,
             bounds: {},
-            polylines: []
+            polylines: [path_dummy]
         }
     });
     
@@ -85,6 +108,8 @@ function MapController($scope, $localStorage, $filter, $log, $timeout, $http) {
     
     // Button Function ==========================================
     $scope.createNewPath = function () {
+        if ($scope.drawLine) $scope.drawLineToggle();
+        if ($scope.editLine) $scope.editLineToggle();        
         $scope.$storage.pathCounter++; 
         var newPath = {
                     id: $scope.$storage.pathCounter,
@@ -108,23 +133,33 @@ function MapController($scope, $localStorage, $filter, $log, $timeout, $http) {
                     visible: true
                 };
         var newIndex = $scope.$storage.mapConfig.polylines.push(newPath);
+        if($scope.$storage.mapConfig.polylines[0].dummy){
+            $scope.$storage.mapConfig.polylines.shift();
+            newIndex -= 1;
+        }
         $scope.currentPathIndex = newIndex-1;
         setWorkingMode(true);
         return;
     };
     
     $scope.deletePath = function () {
+        Pace.start();
         $scope.$storage.pathCounter = 0;
-        $scope.$storage.mapConfig.polylines = [];
+        $scope.$storage.mapConfig.polylines = [path_dummy];
         setWorkingMode(false);
         $scope.pathIndex = 0;
         $scope.$storage.runningId = 0;
+        // bug when hit delete path polyline not redraw. So reload page to redraw.
+        // Angular not apply value when execute funtion. Need to finish fn first then reload later.
+        setTimeout(location.reload(), 1); 
         return;
     };    
     
     
     // Line Function ===============================================
     $scope.editPath = function (pathIndex) {
+        if ($scope.drawLine) $scope.drawLineToggle();
+        if ($scope.editLine) $scope.editLineToggle();
         $scope.currentPathIndex = pathIndex;
         genMarkerFromPath($scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path);
         setWorkingMode(true);

@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Path Creator</title>
-
-    <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+    
+    <link href="css/pace.css" rel="stylesheet" type="text/css">
+    <script src="js/vendor/pace.min.js" type="text/javascript"></script>
+    
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css">    
     <link href="css/main.css" rel="stylesheet" type="text/css">
 </head>
 
@@ -63,7 +66,10 @@
                     Path
                     <button class="btn btn-success" ng-click="doneEditPath()" ng-if="working">Done Edit</button>
                 </h2>
-                <div ng-repeat="p in $storage.mapConfig.polylines" ng-class="pathListClass" ng-click="editPath($index)">
+                <div ng-repeat="p in $storage.mapConfig.polylines" 
+                     ng-class="pathListClass" 
+                     ng-click="editPath($index)" 
+                     ng-if="!$storage.mapConfig.polylines[0].dummy">
                     <div class="info-box" style="border-left-color:{{ p.stroke.color }}">
                         <h4 style="color:{{ p.stroke.color }};">{{ p.name || p.id }}</h4>
                     </div>
@@ -138,6 +144,7 @@
     <script src="js/vendor/bluebird-2.3.6.js" type="text/javascript"></script>
     <script src="js/vendor/angular-google-maps-2.0.1.min.js" type="text/javascript"></script>
     <script src="js/vendor/ngStorage.min.js" type="text/javascript"></script>
+    
     <script src="js/path.js"></script>
 </body>
 

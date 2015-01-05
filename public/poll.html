@@ -21,18 +21,14 @@
                 </h1>
 
                 <div class="form-inline pull-right">
-                    ผู้ตอบแบบสอบถาม
-                    <input type="text" class="form-control" id="poll-user" ng-model="poll.poll_user"
-                           placeholder="ชื่อผู้ทำแบบสอบถาม">
-                    วันที่ทำแบบสอบถาม
-                    <input type="text" class="form-control" id="poll-date" ng-model="poll.poll_date"
+                    <span style="width:100px" ng-cloak>วันที่ทำแบบสอบถาม {{poll.poll_date}}</span>
+                    <input type="hidden" class="form-control" id="poll-date" ng-model="poll.poll_date"
                            placeholder="yyyy-MM-dd" required>
                 </div>
             </div>
 
             <hr/>
-
-            <div class="row">
+            <div class="row" ng-show="!savingForm">
                 <div class="container">
                     <h3>1. ปัจจุบันท่านใช้พาหนะหลักประเภทใด ในการเดินทางเป็นประจำ</h3>
 
@@ -88,8 +84,12 @@
                                     <input type="radio" name="poll-2" id="poll-2-1" ng-model="poll.poll_2" value="เคย">
                                     เคย เนื่องจาก
                                 </label>
+                                <label class="radio">
+                                    <input type="radio" name="poll-2" id="poll-2-2" ng-model="poll.poll_2"
+                                           value="ไม่เคย"> ไม่เคย เพราะ
+                                </label>                                
                             </div>
-                            <div class="col-sm-9">
+                            <div class="col-sm-9" ng-show="poll.poll_2=='เคย'">
                                 <fieldset>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
@@ -142,17 +142,7 @@
                                     </div>
                                 </fieldset>
                             </div>
-                        </div>
-                        <hr/>
-
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <label class="radio">
-                                    <input type="radio" name="poll-2" id="poll-2-2" ng-model="poll.poll_2"
-                                           value="ไม่เคย"> ไม่เคย เพราะ
-                                </label>
-                            </div>
-                            <div class="col-sm-9">
+                            <div class="col-sm-9" ng-show="poll.poll_2=='ไม่เคย'">
                                 <fieldset>
                                     <div class="form-inline">
                                         <label class="checkbox-inline">
@@ -183,9 +173,9 @@
                     </div>
 
 
-                    <h3>3. ท่านเดินทางด้วยระบบขนส่งทางน้ำบ่อยแค่ไหน</h3>
+                    <h3 ng-class="{false: 'grey-header'}[poll.poll_2=='เคย']">3. ท่านเดินทางด้วยระบบขนส่งทางน้ำบ่อยแค่ไหน</h3>
 
-                    <div class="form-group form-inline">
+                    <div class="form-group form-inline" ng-show="poll.poll_2=='เคย'">
                         <label class="radio-inline">
                             <input type="radio" id="poll-3-1" name="poll-3" ng-model="poll.poll_3"
                                    value="เป็นประจำทุกวัน"> เป็นประจำทุกวัน
@@ -208,9 +198,9 @@
                         </label>
                     </div>
 
-                    <h3>4. ท่านเดินทางด้วยระบบขนส่งทางน้ำช่วงเวลาใด</h3>
+                    <h3 ng-class="{false: 'grey-header'}[poll.poll_2=='เคย']">4. ท่านเดินทางด้วยระบบขนส่งทางน้ำช่วงเวลาใด</h3>
 
-                    <div class="form-group form-inline">
+                    <div class="form-group form-inline" ng-show="poll.poll_2=='เคย'">
                         <label class="checkbox-inline">
                             <input type="checkbox" id="poll-4-1" ng-model="poll.poll_4_1" value="05.30-08.00 น.">
                             05.30-08.00 น.
@@ -233,12 +223,13 @@
                         </label>
                     </div>
 
-                    <h3>5. สาเหตุที่ท่านเลือกเดินทางด้วยระบบขนส่งทางน้ำ</h3>
+                    <h3 ng-show="poll.poll_2=='เคย'">5. สาเหตุที่ท่านเลือกเดินทางด้วยระบบขนส่งทางน้ำ</h3>
+                    <h3 ng-show="poll.poll_2!='เคย'">5. กรุณาระบุปัจจัยที่อาจจะทำให้คุณสนใจเปลี่ยนมาใช้การเดินทางทางน้ำำ</h3>
                     <span>เลือกในช่องที่ตรงกับความคิดเห็นของท่าน (ระดับการให้คะแนน 1 ถึง 5 ; โดยที่ 5=มากที่สุด, 1=น้อยที่สุด)</span>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th rowspan="2">สาเหตุที่เลือกเดินทางด้วยระบบคมขนส่งทางน้ำ</th>
+                                <th rowspan="2">สาเหตุที่เลือกจะเดินทางด้วยระบบคมขนส่งทางน้ำ</th>
                                 <th colspan="5">ระดับความคิดเห็น</th>
                             </tr>
                             <tr>
@@ -484,13 +475,17 @@
                     </div>
 
 
-                    <button type="submit" class="btn btn-lg btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-lg btn-primary">ยืนยันข้อมูล</button>
                     <button type="cancel" class="btn btn-lg btn-default" ng-click="resetPoll()">Reset</button>
                     {{ status_msg }}
 
                 </div>
             </div>
 
+            <div class="row" ng-show="savingForm">
+                <div class="saving-form-data">{{ status_msg }}</div>
+            </div>            
+            
             <hr/>
             <div style="margin:10px 0; vertical-align:middle;" align="center">
                 <img src="img/rockefeller%20foundation.jpg">

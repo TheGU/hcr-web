@@ -35,6 +35,10 @@ app.get('/poll', function (req, res) {
     res.sendFile(__dirname + '/public/poll.html');
 });
 
+app.get('/poll-submit', function (req, res) {
+    res.sendFile(__dirname + '/public/poll-submit.html');
+});
+
 // API =================
 app.get('/api/poll', function (req, res) {
 });

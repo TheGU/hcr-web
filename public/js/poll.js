@@ -2,6 +2,7 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
     .controller('PollController', function ($scope, $filter, $log, $timeout, $http) {
 
         $scope.status_msg = "";
+        $scope.savingForm = false;
         $scope.poll = {
             poll_date: $filter('date')(new Date, 'yyyy-MM-dd')
         };
@@ -122,14 +123,18 @@ angular.module('hcr-poll-collector', ['google-maps'.ns()])
 
         // Submit and cancel form -------------------------
         $scope.submitPoll = function () {
-            $scope.status_msg = "Saving ... ";
+            $scope.status_msg = "กำลังบันทึกข้อมูล ... ";
+            
+            $scope.savingForm = true;
+            
             $log.log($scope.poll);
             $http.post('/api/poll', $scope.poll)
                 .success(function (data) {
                     $scope.resetPoll();
                     $scope.status = data;
+                
                     $log.log(data);
-                    $scope.status_msg = "Done";
+                    $scope.status_msg = "บันทึกเสร็จเรียบร้อย";
                 })
                 .error(function (data) {
                     $log.log('Error: ' + data);

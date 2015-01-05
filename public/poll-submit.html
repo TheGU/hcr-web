@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:ng="http://angularjs.org" id='ng-app' ng-app="hcr-poll-collector">
+<head>
+    <meta charset="UTF-8">
+    <title>Poll</title>
+
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="css/main.css" rel="stylesheet" type="text/css">
+</head>
+
+<body ng-controller="PollController">
+    <form role="form" ng-submit="submitPoll()" name="pollForm">
+        <div class="container">
+            <div class="pull-right" style="margin:10px 0;" align="right">
+                <img src="img/rockefeller%20foundation.jpg" style="height:80px;"><br/>
+                <img src="img/tu.jpg" style="height:80px;">
+            </div>
+            <div class="row">
+                <h1>
+                    แบบสำรวจความคิดเห็นของประชาชนต่อโครงการเชื่อมโยงโครงข่ายการคมนาคมขนส่งทางน้ำกับโครงข่ายการคมนาคมขนส่งทางรางมูลนิธิร็อคกี้เฟลเลอร์และมหาวิทยาลัยธรรมศาสตร์ศูนย์รังสิต
+                </h1>
+            </div>
+
+            <hr/>
+
+            
+
+            <hr/>
+            <div style="margin:10px 0; vertical-align:middle;" align="center">
+                <img src="img/rockefeller%20foundation.jpg">
+                <img src="img/tu.jpg">
+            </div>
+        </div>
+    </form>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js" type="text/javascript"></script>
+    <script src='//maps.googleapis.com/maps/api/js?sensor=false&libraries=geometry' type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js" type="text/javascript"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js" type="text/javascript"></script>
+    <script src="js/vendor/bootstrap.min.js" type="text/javascript"></script>
+    <script src="js/vendor/bluebird-2.3.6.js" type="text/javascript"></script>
+    <script src="js/vendor/angular-google-maps-2.0.1.min.js" type="text/javascript"></script>
+    <script src="js/poll.js"></script>
+</body>
+
+</html>

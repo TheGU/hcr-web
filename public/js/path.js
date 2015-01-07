@@ -1,6 +1,8 @@
-var app = angular.module("hcr-map-path", ['google-maps'.ns(),'ngStorage']);
+(function () {
+    var module = angular.module("hcr-map-path", ['google-maps'.ns(),'ngStorage']);
+}());
 
-app.controller('MapController', function ($scope, $localStorage, $filter, $log, $timeout, $http) {
+function MapController($scope, $localStorage, $filter, $log, $timeout, $http) {
 
     // Enable the new Google Maps visuals until it gets enabled by default.
     // See http://googlegeodevelopers.blogspot.ca/2013/05/a-fresh-new-look-for-maps-api-for-all.html
@@ -82,7 +84,7 @@ app.controller('MapController', function ($scope, $localStorage, $filter, $log, 
                         if(path_len === 2 && $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path[0].dummy){
                             $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path.shift();
                         }
-                        $scope.dataMarkers.push(createMarker(tid, '', lat, lon));
+                        $scope.dataMarkers.push(createMarker(tid, lat, lon));
                     }
                     $scope.$apply();
                 },
@@ -210,35 +212,8 @@ app.controller('MapController', function ($scope, $localStorage, $filter, $log, 
             }
         }
     };    
-
-    $scope.deleteMarker = function(idx) {
-        $scope.dataMarkers = [];
-        return;
-    }
-    $scope.redrawMarker = function(idx) {
-        genMarkerFromPath($scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path);
-        return;
-    }    
     
     // cosmetic and helper function =================================
-    
-    // monitor current path if they change path information
-    $scope.$watchCollection("$storage.mapConfig.polylines[currentPathIndex].path", function (newVal, oldVal) {
-        if (_.isEqual(newVal, oldVal) || _.isEmpty(newVal))
-            return;
-        
-        if ($scope.editLine){
-            // fill empty id marker
-            for (var i=0; i < $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path.length; i++) {
-                if (!$scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path[i].id) {
-                    $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path[i].id = 'm' + (++$scope.$storage.runningId);
-                    $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path[i].name = '';
-                    $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path[i].station = false;
-                }
-            }            
-        }
-    });
-    
     var setWorkingMode = function (working) {
         $scope.working = working;
         if(working){
@@ -261,7 +236,7 @@ app.controller('MapController', function ($scope, $localStorage, $filter, $log, 
     };
     setWorkingMode($scope.working);
     
-    var createMarker = function (i, label, latitude, longitude, idKey) {
+    var createMarker = function (i, latitude, longitude, idKey) {
         if (idKey == null) {
             idKey = "id";
         }
@@ -271,7 +246,7 @@ app.controller('MapController', function ($scope, $localStorage, $filter, $log, 
             options: {
                 draggable: false,
                 labelAnchor: '-6 8',
-                labelContent: i + ':' + label,
+                labelContent: i,
                 labelClass: 'labelMarker',
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
@@ -292,9 +267,9 @@ app.controller('MapController', function ($scope, $localStorage, $filter, $log, 
     var genMarkerFromPath = function (path) {
         var markers = [];
         for (var i = 0; i < path.length; i++) {
-            markers.push(createMarker(path[i].id, path[i].name, path[i].latitude, path[i].longitude));
+            markers.push(createMarker(path[i].id, path[i].latitude, path[i].longitude));
         }
         $scope.dataMarkers = markers;
         return;
     };    
-});
+}

@@ -1,0 +1,26 @@
+{
+  "name": "hcr-web",
+  "main": "index.js",
+  "version": "0.2.1",
+  "authors": [
+    "Pattapong J. <neotrez@gmail.com>"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/js/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-google-maps": "~2.0.12",
+    "bootstrap-without-jquery": "git://github.com/tagawa/bootstrap-without-jquery.git",
+    "ngstorage": "~0.3.0",
+    "pace": "~1.0.2"
+  }
+}

@@ -31,12 +31,24 @@ app.get('/path', function (req, res) {
     res.sendFile(__dirname + '/public/path.html');
 });
 
+app.get('/path-new', function (req, res) {
+    res.sendFile(__dirname + '/public/path-new.html');
+});
+
 app.get('/poll', function (req, res) {
     res.sendFile(__dirname + '/public/poll.html');
 });
 
+app.get('/poll-new', function (req, res) {
+    res.sendFile(__dirname + '/public/poll-new.html');
+});
+
 app.get('/poll-submit', function (req, res) {
     res.sendFile(__dirname + '/public/poll-submit.html');
+});
+
+app.get('/Bangkok.json', function (req, res) {
+    res.sendFile(__dirname + '/public/Bangkok.json');
 });
 
 // API =================

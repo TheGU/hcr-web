@@ -1,14 +1,6 @@
 /**
  * Created by TheGU on 2015-01-31.
  */
-
-var app = angular.module("demoapp", ['leaflet-directive']);
-
-app.controller("DemoController", [ "$scope", function($scope) {
-    // Nothing here!
-}]);
-
-
 angular.module('hcr-poll-collector', ['leaflet-directive'])
     .controller('PollController', function ($scope, $filter, $log, $timeout, $http, leafletData) {
 

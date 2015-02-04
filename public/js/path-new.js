@@ -91,18 +91,13 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     $scope.path = [];
     $scope.area = [];
 
-
+    var drawnItems = null;
     leafletData.getMap().then(function (map) {
-        var drawnItems = $scope.map.controls.edit.featureGroup;
+        drawnItems = $scope.map.controls.edit.featureGroup;
         map.on('draw:created', function (e) {
             var type = e.layerType,
                 layer = e.layer;
             drawnItems.addLayer(layer);
-            
-            layer.on('click', function (e) {
-               var layer = e.target;
-               //layer.editing.enable();
-            });            
             
             if (type === 'polyline') {
                 $scope.path.push({
@@ -120,6 +115,11 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 });
             }
             
+            layer.on('click', function (e) {
+               var layer = e.target;
+               //layer.editing.enable();
+            });            
+                        
             //console.log(JSON.stringify(layer.toGeoJSON()));
         });
         map.on('draw:edited', function (e) {
@@ -152,6 +152,29 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         return;
     };
     setWorkingMode($scope.working);
+    
+    $scope.currentLayer = null;
+    $scope.currentLayerOptions = null;
+    $scope.editPath = function (pathIndex) {
+        $scope.currentLayer = drawnItems.getLayer($scope.path[pathIndex].id);
+        $scope.currentLayer.editing.enable();
+        $scope.currentLayerOptions = $scope.currentLayer.options;
+        setWorkingMode(true);
+        return;
+    };
+
+    $scope.doneEditPath = function () {
+        $scope.currentLayer.editing.disable();
+        setWorkingMode(false);
+        return;
+    };
+    
+    $scope.$watch('currentLayerOptions.color', function(newValue, oldValue) {
+        if (newValue === oldValue || !oldValue) return;
+        if($scope.currentLayerOptions)
+            $scope.currentLayer.setStyle($scope.currentLayerOptions);
+    });      
+     
     
     /*
     // Enable the new Google Maps visuals until it gets enabled by default.

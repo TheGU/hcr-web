@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html xmlns:ng="http://angularjs.org" id='ng-app' ng-app="hcr-poll-collector">
+<head>
+    <meta charset="UTF-8">
+    <title>Poll</title>
+
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="js/vendor/leaflet/dist/leaflet.css" rel="stylesheet" type="text/css">
+
+    <link href="css/main.css" rel="stylesheet" type="text/css">
+</head>
+
+<body ng-controller="PollController">
+    <form role="form" ng-submit="submitPoll()" name="pollForm">
+        <div class="container">
+            <div class="pull-right" style="margin:10px 0;" align="right">
+                <img src="img/rockefeller%20foundation.jpg" style="height:80px;"><br/>
+                <img src="img/tu.jpg" style="height:80px;">
+            </div>
+            <div class="row">
+                <h1>
+                    แบบสำรวจความคิดเห็นของประชาชนต่อโครงการเชื่อมโยงโครงข่ายการคมนาคมขนส่งทางน้ำกับโครงข่ายการคมนาคมขนส่งทางรางมูลนิธิร็อคกี้เฟลเลอร์และมหาวิทยาลัยธรรมศาสตร์ศูนย์รังสิต
+                </h1>
+
+                <div class="form-inline pull-right">
+                    <span style="width:100px" ng-cloak>วันที่ทำแบบสอบถาม {{poll.poll_date}}</span>
+                    <input type="hidden" class="form-control" id="poll-date" ng-model="poll.poll_date"
+                           placeholder="yyyy-MM-dd" required>
+                </div>
+            </div>
+
+            <hr/>
+            <div class="row" ng-show="!savingForm">
+                <div class="container">           
+                    
+                    <h3 ng-if="setMarkerStatus===0">
+                        เลือกจุดเริ่มต้นการเดินทาง
+                        <button type="button" class="btn btn-lg btn-success" id="confirm_start" 
+                                ng-if="map.markers.start_marker && setStartMarkerStatus" 
+                                ng-click="submitStartMarker()">
+                            ยืนยันจุดเริ่มต้นการเดินทาง
+                        </button>
+                        <small  ng-if="map.markers.start_marker && setStartMarkerStatus">
+                            {{ poll.poll_6_1_start.description }}
+                        </small>
+                    </h3>
+                    <h3 ng-if="setMarkerStatus===1">
+                        เลือกจุดสิ้นสุดการเดินทาง
+                        <button type="button" class="btn btn-lg btn-danger" id="confirm_stop" 
+                                ng-if="map.markers.stop_marker && setStopMarkerStatus" 
+                                ng-click="submitStopMarker()">
+                            ยืนยันจุดสิ้นสุดการเดินทาง
+                        </button>
+                        <small  ng-if="map.markers.stop_marker && setStopMarkerStatus">
+                            {{ poll.poll_6_1_stop.description }}
+                        </small>
+                    </h3>                    
+                    <leaflet class="map-container"
+                             center="map.center"
+                             defaults="map.defaults"
+                             layers="map.layers"
+                             markers="map.markers"
+                             geojson="geojson"></leaflet>
+                    
+                    
+                    <div ng-if="setMarkerStatus===2">
+                        <h3>1. ปัจจุบันท่านใช้พาหนะหลักประเภทใด ในการเดินทางเป็นประจำ</h3>
+
+                        <div class="form-group form-inline">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-1" ng-model="poll.poll_1_1" value="true"> รถยนต์ส่วนตัว
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-2" ng-model="poll.poll_1_2" value="true"> รถจักรยานยนต์
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-3" ng-model="poll.poll_1_3" value="true"> รถจักรยาน
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-4" ng-model="poll.poll_1_4" value="true">
+                                รถรับจ้าง/แท็กซี่
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-5" ng-model="poll.poll_1_5" value="true"> รถประจำทาง
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-6" ng-model="poll.poll_1_6" value="true"> รถตู้โดยสาร
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-7" ng-model="poll.poll_1_7" value="true"> BTS
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-8" ng-model="poll.poll_1_8" value="true"> MRT
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-9" ng-model="poll.poll_1_9" value="true"> BRT
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-10" ng-model="poll.poll_1_10" value="true"> Airport Rail
+                                Link
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-11" ng-model="poll.poll_1_11" value="true"> เรือโดยสาร
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-1-12" ng-model="poll.poll_1_12" value="true"> อื่นๆ
+                            </label>
+                            <input class="form-control" id="poll-1-12-text" ng-model="poll.poll_1_12_text" type="text"
+                                   placeholder="โปรดระบุ">
+                        </div>
+
+                        <h3>2. ท่านเคยเดินทางด้วยระบบขนส่งทางน้ำภายในกรุงเทพฯ หรือไม่</h3>
+
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label class="radio">
+                                        <input type="radio" name="poll-2" id="poll-2-1" ng-model="poll.poll_2" value="เคย">
+                                        เคย เนื่องจาก
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" name="poll-2" id="poll-2-2" ng-model="poll.poll_2"
+                                               value="ไม่เคย"> ไม่เคย เพราะ
+                                    </label>
+                                </div>
+                                <div class="col-sm-9" ng-show="poll.poll_2=='เคย'">
+                                    <fieldset>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-1-1" ng-model="poll.poll_2_1_1"
+                                                       value="true">
+                                                มีสถานที่ศึกษาอยู่ใน/ใกล้เส้นทาง
+                                            </label>
+                                            <input class="form-control" id="poll-2-1-1-text" ng-model="poll.poll_2_1_1_text"
+                                                   type="text"
+                                                   placeholder="โปรดระบุ">
+                                        </div>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-1-2" ng-model="poll.poll_2_1_2"
+                                                       value="true">
+                                                มีสถานที่พักอาศัยอยู่ใน/ใกล้เส้นทาง
+                                            </label>
+                                            <input class="form-control" id="poll-2-1-2-text" ng-model="poll.poll_2_1_2_text"
+                                                   type="text"
+                                                   placeholder="โปรดระบุ">
+                                        </div>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-1-3" ng-model="poll.poll_2_1_3"
+                                                       value="true">
+                                                มีสถานที่ทำงานอยู่ใน/ใกล้เส้นทาง
+                                            </label>
+                                            <input class="form-control" id="poll-2-1-3-text" ng-model="poll.poll_2_1_3_text"
+                                                   type="text"
+                                                   placeholder="โปรดระบุ">
+                                        </div>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-1-4" ng-model="poll.poll_2_1_4"
+                                                       value="true">
+                                                เป็นเส้นทางที่ใช้ประจำ/บ่อย
+                                            </label>
+                                            <input class="form-control" id="poll-2-1-4-text" ng-model="poll.poll_2_1_4_text"
+                                                   type="text"
+                                                   placeholder="โปรดระบุ">
+                                        </div>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-1-5" ng-model="poll.poll_2_1_5"
+                                                       value="true"> อื่น ๆ
+                                            </label>
+                                            <input class="form-control" id="poll-2-1-5-text" ng-model="poll.poll_2_1_5_text"
+                                                   type="text"
+                                                   placeholder="โปรดระบุ">
+                                        </div>
+                                    </fieldset>
+                                </div>
+                                <div class="col-sm-9" ng-show="poll.poll_2=='ไม่เคย'">
+                                    <fieldset>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-2-1" ng-model="poll.poll_2_2_1"
+                                                       value="true">
+                                                ไม่ได้อยู่ในเส้นทางระบบขนส่งทางน้ำ
+                                            </label>
+                                        </div>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-2-2" ng-model="poll.poll_2_2_2"
+                                                       value="true">
+                                                อยู่ในเส้นทางระบบขนส่งทางน้ำแต่ไม่มีโอกาสที่จะใช้
+                                            </label>
+                                        </div>
+                                        <div class="form-inline">
+                                            <label class="checkbox-inline">
+                                                <input type="checkbox" id="poll-2-2-3" ng-model="poll.poll_2_2_3"
+                                                       value="true"> อื่น ๆ
+                                            </label>
+                                            <input class="form-control" id="poll-2-2-3-text" ng-model="poll.poll_2_2_3_text"
+                                                   type="text"
+                                                   placeholder="โปรดระบุ">
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <h3 ng-class="{false: 'grey-header'}[poll.poll_2=='เคย']">3. ท่านเดินทางด้วยระบบขนส่งทางน้ำบ่อยแค่ไหน</h3>
+
+                        <div class="form-group form-inline" ng-show="poll.poll_2=='เคย'">
+                            <label class="radio-inline">
+                                <input type="radio" id="poll-3-1" name="poll-3" ng-model="poll.poll_3"
+                                       value="เป็นประจำทุกวัน"> เป็นประจำทุกวัน
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" id="poll-3-2" name="poll-3" ng-model="poll.poll_3"
+                                       value="3-4 ครั้ง/สัปดาห์"> 3-4 ครั้ง/สัปดาห์
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" id="poll-3-3" name="poll-3" ng-model="poll.poll_3"
+                                       value="1-2 ครั้ง/สัปดาห์"> 1-2 ครั้ง/สัปดาห์
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" id="poll-3-4" name="poll-3" ng-model="poll.poll_3"
+                                       value="1-2 ครั้ง/เดือน"> 1-2 ครั้ง/เดือน
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" id="poll-3-5" name="poll-3" ng-model="poll.poll_3"
+                                       value="น้อยกว่า 1 ครั้ง/เดือน"> น้อยกว่า 1 ครั้ง/เดือน
+                            </label>
+                        </div>
+
+                        <h3 ng-class="{false: 'grey-header'}[poll.poll_2=='เคย']">4. ท่านเดินทางด้วยระบบขนส่งทางน้ำช่วงเวลาใด</h3>
+
+                        <div class="form-group form-inline" ng-show="poll.poll_2=='เคย'">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-4-1" ng-model="poll.poll_4_1" value="05.30-08.00 น.">
+                                05.30-08.00 น.
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-4-2" ng-model="poll.poll_4_2" value="08.01-11.00 น.">
+                                08.01-11.00 น.
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-4-3" ng-model="poll.poll_4_3" value="11.01-14.00 น.">
+                                11.01-14.00 น.
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-4-4" ng-model="poll.poll_4_4" value="14.01-17.00 น.">
+                                14.01-17.00 น.
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-4-5" ng-model="poll.poll_4_5" value="17.01-20.30 น.">
+                                17.01-20.30 น.
+                            </label>
+                        </div>
+
+                        <h3 ng-show="poll.poll_2=='เคย'">5. สาเหตุที่ท่านเลือกเดินทางด้วยระบบขนส่งทางน้ำ</h3>
+                        <h3 ng-show="poll.poll_2!='เคย'">5. กรุณาระบุปัจจัยที่อาจจะทำให้คุณสนใจเปลี่ยนมาใช้การเดินทางทางน้ำำ</h3>
+                        <span>เลือกในช่องที่ตรงกับความคิดเห็นของท่าน (ระดับการให้คะแนน 1 ถึง 5 ; โดยที่ 5=มากที่สุด, 1=น้อยที่สุด)</span>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">สาเหตุที่เลือกจะเดินทางด้วยระบบคมขนส่งทางน้ำ</th>
+                                    <th colspan="5">ระดับความคิดเห็น</th>
+                                </tr>
+                                <tr>
+                                    <th>5</th>
+                                    <th>4</th>
+                                    <th>3</th>
+                                    <th>2</th>
+                                    <th>1</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1. ราคาค่าบริการถูก</td>
+                                    <td><input type="radio" name="poll-5-1" id="poll-5-1-5" ng-model="poll.poll_5_1"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-1" id="poll-5-1-4" ng-model="poll.poll_5_1"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-1" id="poll-5-1-3" ng-model="poll.poll_5_1"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-1" id="poll-5-1-2" ng-model="poll.poll_5_1"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-1" id="poll-5-1-1" ng-model="poll.poll_5_1"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>2. การเข้าถึงสถานีสะดวกสบาย</td>
+                                    <td><input type="radio" name="poll-5-2" id="poll-5-2-5" ng-model="poll.poll_5_2"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-2" id="poll-5-2-4" ng-model="poll.poll_5_2"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-2" id="poll-5-2-3" ng-model="poll.poll_5_2"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-2" id="poll-5-2-2" ng-model="poll.poll_5_2"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-2" id="poll-5-2-1" ng-model="poll.poll_5_2"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>3. มีเส้นทางเชื่อมต่อกับระบบขนส่งมวลชนอื่นๆ</td>
+                                    <td><input type="radio" name="poll-5-3" id="poll-5-3-5" ng-model="poll.poll_5_3"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-3" id="poll-5-3-4" ng-model="poll.poll_5_3"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-3" id="poll-5-3-3" ng-model="poll.poll_5_3"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-3" id="poll-5-3-2" ng-model="poll.poll_5_3"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-3" id="poll-5-3-1" ng-model="poll.poll_5_3"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>4. อยู่ใกล้สถานที่ศึกษา/ทำงาน</td>
+                                    <td><input type="radio" name="poll-5-4" id="poll-5-4-5" ng-model="poll.poll_5_4"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-4" id="poll-5-4-4" ng-model="poll.poll_5_4"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-4" id="poll-5-4-3" ng-model="poll.poll_5_4"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-4" id="poll-5-4-2" ng-model="poll.poll_5_4"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-4" id="poll-5-4-1" ng-model="poll.poll_5_4"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>5. อยู่ใกล้สถานที่ช้อปปิ้ง เที่ยวพักผ่อน และพื้นที่ด้านการทำธุรกรรมต่างๆ</td>
+                                    <td><input type="radio" name="poll-5-5" id="poll-5-5-5" ng-model="poll.poll_5_5"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-5" id="poll-5-5-4" ng-model="poll.poll_5_5"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-5" id="poll-5-5-3" ng-model="poll.poll_5_5"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-5" id="poll-5-5-2" ng-model="poll.poll_5_5"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-5" id="poll-5-5-1" ng-model="poll.poll_5_5"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>6. สามารถกำหนดเวลาในการเดินทางได้</td>
+                                    <td><input type="radio" name="poll-5-6" id="poll-5-6-5" ng-model="poll.poll_5_6"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-6" id="poll-5-6-4" ng-model="poll.poll_5_6"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-6" id="poll-5-6-3" ng-model="poll.poll_5_6"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-6" id="poll-5-6-2" ng-model="poll.poll_5_6"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-6" id="poll-5-6-1" ng-model="poll.poll_5_6"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>7. พนักงานดูแล เอาใจใส่ และให้ความช่วยเหลือผู้ใช้บริการดี</td>
+                                    <td><input type="radio" name="poll-5-7" id="poll-5-7-5" ng-model="poll.poll_5_7"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-7" id="poll-5-7-4" ng-model="poll.poll_5_7"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-7" id="poll-5-7-3" ng-model="poll.poll_5_7"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-7" id="poll-5-7-2" ng-model="poll.poll_5_7"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-7" id="poll-5-7-1" ng-model="poll.poll_5_7"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>8. สภาพเรือสะอาดและปลอดภัย</td>
+                                    <td><input type="radio" name="poll-5-8" id="poll-5-8-5" ng-model="poll.poll_5_8"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-8" id="poll-5-8-4" ng-model="poll.poll_5_8"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-8" id="poll-5-8-3" ng-model="poll.poll_5_8"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-8" id="poll-5-8-2" ng-model="poll.poll_5_8"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-8" id="poll-5-8-1" ng-model="poll.poll_5_8"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>9. มีระบบการรักษาความปลอดภัยที่เข้มงวด</td>
+                                    <td><input type="radio" name="poll-5-9" id="poll-5-9-5" ng-model="poll.poll_5_9"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-9" id="poll-5-9-4" ng-model="poll.poll_5_9"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-9" id="poll-5-9-3" ng-model="poll.poll_5_9"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-9" id="poll-5-9-2" ng-model="poll.poll_5_9"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-9" id="poll-5-9-1" ng-model="poll.poll_5_9"
+                                               value="1"></td>
+                                </tr>
+                                <tr>
+                                    <td>10. อื่นๆ <input class="form-control" type="text" ng-model="poll.poll_5_10_text"
+                                                         id="poll-5-10-text" placeholder="โปรดระบุ"></td>
+                                    <td><input type="radio" name="poll-5-10" id="poll-5-10-5" ng-model="poll.poll_5_10"
+                                               value="5"></td>
+                                    <td><input type="radio" name="poll-5-10" id="poll-5-10-4" ng-model="poll.poll_5_10"
+                                               value="4"></td>
+                                    <td><input type="radio" name="poll-5-10" id="poll-5-10-3" ng-model="poll.poll_5_10"
+                                               value="3"></td>
+                                    <td><input type="radio" name="poll-5-10" id="poll-5-10-2" ng-model="poll.poll_5_10"
+                                               value="2"></td>
+                                    <td><input type="radio" name="poll-5-10" id="poll-5-10-1" ng-model="poll.poll_5_10"
+                                               value="1"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3>6. รูปแบบการเดินทางของท่านในปัจจุบัน</h3>
+
+                        <div class="row">
+                            <p>เลื่อนแผนที่ไปยังบริเวณที่ต้องการ จากนั้นกดปุ่ม "เลือกจากแผนที่"
+                                เพื่อปักหมุดยังกึ่งกลางแผนที่ที่ได้เลือกไว้</p>
+
+                            <p>เมื่อหมุดแสดงบนแผนที่แล้ว สามารถลากหมุดไปยังตำแหน่งที่ต้องการเพื่อเปลี่ยนตำแหน่งได้</p>
+
+                            <div class="form-group form-inline">
+                                จุดเริ่มต้นการเดินทาง
+                                <input type="text" class="form-control" id="poll-6-1-start"
+                                       ng-model="poll.poll_6_1_start.coordinates" placeholder="จุดเริ่มต้น">
+                                {{ poll.poll_6_1_start.description }}
+                            </div>
+                            <div class="form-group form-inline">
+                                จุดสิ้นสุดการเดินทาง
+                                <input type="text" class="form-control" id="poll-6-1-stop"
+                                       ng-model="poll.poll_6_1_stop.coordinates" placeholder="จุดสิ้นสุด">
+                                {{ poll.poll_6_1_stop.description }}
+                            </div>
+
+                            <div class="form-group form-inline">
+                                ระยะเวลาในการเดินทาง
+                                <input type="text" class="form-control" id="poll-6-2" ng-model="poll.poll_6_2"
+                                       placeholder="ระยะทาง">
+                                กิโลเมตร/เที่ยว
+                            </div>
+                            <div class="form-group form-inline">
+                                ค่าใช้จ่ายในการเดินทาง
+                                <input type="text" class="form-control" id="poll-6-3" ng-model="poll.poll_6_3"
+                                       placeholder="จำนวนเงิน">
+                                บาท/วัน
+                            </div>
+                        </div>
+
+                        <h3>7. หากมีการเชื่อมต่อระบบคมนาคมขนส่งทางน้ำกับระบบราง
+                            ปัจจัยใดจะทำให้ท่านเปลี่ยนมาใช้การคมนาคมขนส่งทางน้ำ
+                            (กรุณาเลือกปัจจัยที่สำคัญที่สุดเพียง 1 ข้อ)</h3>
+
+                        <div class="form-group form-inline">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-7-1" ng-model="poll.poll_7_1" value="ราคาที่ถูกลง">
+                                ราคาที่ถูกลง
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-7-2" ng-model="poll.poll_7_2" value="เวลาเดินทางที่น้อยลง">
+                                เวลาเดินทางที่น้อยลง
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-7-3" ng-model="poll.poll_7_3" value="ความสะดวกที่เพิ่มขึ้น">
+                                ความสะดวกที่เพิ่มขึ้น
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-7-4" ng-model="poll.poll_7_4" value="ความสบายที่เพิ่มขึ้น">
+                                ความสบายที่เพิ่มขึ้น
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-7-5" ng-model="poll.poll_7_5"
+                                       value="ความปลอดภัยที่เพิ่มขึ้น"> ความปลอดภัยที่เพิ่มขึ้น
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="poll-7-6" ng-model="poll.poll_7_6" value="อื่นๆ"> อื่นๆ
+                            </label>
+                            <input class="form-control" id="poll-7-6-text" ng-model="poll.poll_7_6_text" type="text"
+                                   placeholder="โปรดระบุ">
+                        </div>
+
+
+                        <button type="submit" class="btn btn-lg btn-primary">ยืนยันข้อมูล</button>
+                        <button type="cancel" class="btn btn-lg btn-default" ng-click="resetPoll()">Reset</button>
+                        {{ status_msg }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" ng-show="savingForm">
+                <div class="saving-form-data">{{ status_msg }}</div>
+            </div>
+
+            <hr/>
+            <div style="margin:10px 0; vertical-align:middle;" align="center">
+                <img src="img/rockefeller%20foundation.jpg">
+                <img src="img/tu.jpg">
+            </div>
+        </div>
+    </form>
+    <script src="js/vendor/bootstrap-without-jquery/bootstrap3/bootstrap-without-jquery.min.js"></script>
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+    <script src="js/vendor/angular/angular.min.js"></script>
+    <script src="js/vendor/leaflet/dist/leaflet.js"></script>
+    <script src="js/vendor/leaflet-plugins/layer/tile/Google.js"></script>
+    <script src='js/vendor/angular-leaflet-directive/dist/angular-leaflet-directive.min.js'></script>
+    <script src="js/poll-new.js"></script>
+</body>
+
+</html>

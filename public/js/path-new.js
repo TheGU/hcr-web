@@ -47,8 +47,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                             weight: 3,
                             opacity: 0.8,
                         }
-                    }                   
-                }
+                    },
+                },
             },
             layers: {
                 baselayers: {
@@ -70,6 +70,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 }
             },
             markers: {},
+            area: {},
             defaults: {
                 scrollWheelZoom: true
             }
@@ -95,8 +96,10 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     $scope.currentLayer = null;
     $scope.editPath = false;
+    $scope.editArea = false;    
     $scope.currentPath = null;
     $scope.currentArea = null;
+
 
     var drawnItems = null;
     leafletData.getMap().then(function (map) {
@@ -111,9 +114,10 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     id: layer._leaflet_id,
                     type: type,
                     name: '',
-                    options: layer.options
+                    options: layer.options,
+                    layer: layer._latlngs
                 };
-                 
+             
             } else {
                 $scope.area['a' + layer._leaflet_id] = {
                     id: layer._leaflet_id,
@@ -127,6 +131,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 var layer = e.target;
                 if($scope.currentLayer)
                     $scope.currentLayer.editing.disable();
+                
+                $scope.map.markers = {};
 
                 $scope.currentLayer = layer;
                 layer.editing.enable();     
@@ -142,321 +148,88 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     $scope.currentPath = null;
                     $scope.currentArea = $scope.area['a'+layer._leaflet_id];
                 }                
-
             });             
                         
-            createStationMarker(layer);
+            //createStationMarker(layer);
+            updateMarker();
             //console.log(JSON.stringify(layer.toGeoJSON()));
         });
         map.on('draw:edited', function (e) {
             var layers = e.layers;
-            layers.eachLayer(function (layer) {
-                //do whatever you want, most likely save back to db
-            });
+
+            updateMarker();
         });
+        map.on('draw:editstart', function (e) {
+            $scope.map.markers = {};
+        });        
     });
     
     $scope.$watch('currentPath.options', function(newValue, oldValue) {
-        if (newValue === oldValue || !oldValue) return;
+        if (newValue === oldValue || !oldValue || !$scope.currentLayer || !$scope.currentPath) return;
         $scope.currentLayer.setStyle($scope.currentPath.options);
+    }, true);   
+    $scope.$watch('currentPath.name', function(newValue, oldValue) {
+        if (newValue === oldValue || !oldValue || !$scope.currentLayer || !$scope.currentPath) return;
+        $scope.currentLayer.unbindLabel().bindLabel($scope.currentPath.name);
+    }, true);     
+    
+    $scope.$watch('currentArea.options', function(newValue, oldValue) {
+        if (newValue === oldValue || !oldValue || !$scope.currentLayer || !$scope.currentArea) return;
+        $scope.currentLayer.setStyle($scope.currentArea.options);
     }, true);      
-     
+    $scope.$watch('currentArea.name', function(newValue, oldValue) {
+        if (newValue === oldValue || !oldValue || !$scope.currentLayer || !$scope.currentArea) return;
+        $scope.currentLayer.unbindLabel().bindLabel($scope.currentArea.name);
+    }, true);        
 
-    var createStationMarker = function(layer){
-        for(l in layer._latlngs){
-            $scope.stationMarker.push({
-                layer_id: 'p' + layer._leaflet_id,
-                lat: layer._latlngs[l].lat,
-                lng: layer._latlngs[l].lng,
-                station: true,
-                name: 'test'
-            });
-        }
+
+    var updateMarker = function(){
+        
+        var markers = {};
+        $scope.stationMarker = [];
+        
+        leafletData.getMap().then(function (map) {
+            map.eachLayer(function(layer){
+                for(l in layer._latlngs){
+                    $scope.stationMarker.push({
+                        layer_id: 'p' + layer._leaflet_id,
+                        lat: layer._latlngs[l].lat,
+                        lng: layer._latlngs[l].lng,
+                        station: (layer._latlngs[l].station)?layer._latlngs[l].station:false,
+                        name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',
+                    });
+                }                
+            });  
+            
+            for(m in $scope.stationMarker){
+                var marker_point = $scope.stationMarker[m];
+                if (marker_point.station){
+                    markers[marker_point.layer_id + '_' + m] = {
+                        lat: marker_point.lat,
+                        lng: marker_point.lng,
+                        focus: false,
+                        title: "Marker",
+                        draggable: false,
+                        icon: stationIcon,
+                        label: {
+                            message: marker_point.name,
+                            options: {
+                                noHide: true
+                            }
+                        }                       
+                    }
+                }
+            }
+            $scope.map.markers = markers;            
+        });
+    };
+    
+    $scope.doneEdit = function () {
+        $scope.currentLayer.editing.disable();
+        $scope.editPath = false;
+        $scope.editArea = false;
+        $scope.currentPath = null;
+        $scope.currentArea = null;
         updateMarker();
     };
-    
-    var updateMarker = function(){
-        var markers = {};
-        for(m in $scope.stationMarker){
-            var marker_point = $scope.stationMarker[m];
-            if (marker_point.station){
-                markers[marker_point.layer_id + '_' + m] = {
-                    lat: marker_point.lat,
-                    lng: marker_point.lng,
-                    focus: false,
-                    title: "Marker",
-                    draggable: false,
-                    icon: stationIcon,
-                    label: {
-                        message: marker_point.name,
-                        options: {
-                            noHide: true
-                        }
-                    }                       
-                }
-            }
-        }
-        $scope.map.markers = markers;
-    };
-    
-    
-    /*
-    // Enable the new Google Maps visuals until it gets enabled by default.
-    // See http://googlegeodevelopers.blogspot.ca/2013/05/a-fresh-new-look-for-maps-api-for-all.html
-    // google.maps.visualRefresh = true;
-
-    var path_dummy = {
-        id: 9999,
-        name: "dummy",
-        dummy: true,
-        path: [
-            // fix engine bug that not render polyline if path is empty or not valid
-            // set valid information some where then delete it later after get a real first point 
-            {
-                dummy: true,
-                latitude: 0,
-                longitude: 0
-            }
-        ],
-        stroke: {
-            color: '#000',
-            weight: 3
-        },
-        editable: false,
-        draggable: false,
-        geodesic: true,
-        visible: true
-    };
-
-    $scope.$storage = $localStorage.$default({
-        runningId: 0,
-        pathCounter: 0,
-        mapConfig: {
-            version: "uknown",
-            showTraffic: true,
-            showBicycling: false,
-            showWeather: false,
-            showHeat: false,
-            center: {
-                latitude: 13.761061514752807,
-                longitude: 100.54258346557617
-            },
-            options: {
-                streetViewControl: true,
-                panControl: true,
-                maxZoom: 20,
-                minZoom: 3
-            },
-            zoom: 12,
-            dragging: false,
-            draggable: true,
-            pan: true,
-            bounds: {},
-            polylines: [path_dummy]
-        }
-    });
-
-    angular.extend($scope, {
-        map: {
-            control: {},
-            events: {
-                tilesloaded: function (map, eventName, originalEventArgs) {},
-                click: function (mapModel, eventName, originalEventArgs) {
-                    var e = originalEventArgs[0];
-                    var lat = e.latLng.lat(),
-                        lon = e.latLng.lng();
-
-                    if ($scope.drawLine) {
-                        var tid = 'm' + (++$scope.$storage.runningId);
-                        var path_len;
-                        path_len = $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path.push({
-                            id: tid,
-                            name: '',
-                            station: false,
-                            latitude: lat,
-                            longitude: lon
-                        });
-
-                        // clear dummy dot
-                        if (path_len === 2 && $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path[0].dummy) {
-                            $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path.shift();
-                        }
-                        $scope.dataMarkers.push(createMarker(tid, lat, lon));
-                    }
-                    $scope.$apply();
-                },
-                dragend: function () {
-                    self = this;
-                }
-            }
-        }
-    });
-
-    // Button Function ==========================================
-    $scope.createNewPath = function () {
-        if ($scope.drawLine) $scope.drawLineToggle();
-        if ($scope.editLine) $scope.editLineToggle();
-        $scope.$storage.pathCounter++;
-        var newPath = {
-            id: $scope.$storage.pathCounter,
-            name: "",
-            path: [
-                        // fix engine bug that not render polyline if path is empty or not valid
-                        // set valid information some where then delete it later after get a real first point 
-                {
-                    dummy: true,
-                    latitude: 0,
-                    longitude: 0
-                        }
-                    ],
-            stroke: {
-                color: '#000',
-                weight: 3
-            },
-            editable: false,
-            draggable: false,
-            geodesic: true,
-            visible: true
-        };
-        var newIndex = $scope.$storage.mapConfig.polylines.push(newPath);
-        if ($scope.$storage.mapConfig.polylines[0].dummy) {
-            $scope.$storage.mapConfig.polylines.shift();
-            newIndex -= 1;
-        }
-        $scope.currentPathIndex = newIndex - 1;
-        setWorkingMode(true);
-        return;
-    };
-
-    $scope.deletePath = function () {
-        Pace.start();
-        $scope.$storage.pathCounter = 0;
-        $scope.$storage.mapConfig.polylines = [path_dummy];
-        setWorkingMode(false);
-        $scope.pathIndex = 0;
-        $scope.$storage.runningId = 0;
-        // bug when hit delete path polyline not redraw. So reload page to redraw.
-        // Angular not apply value when execute funtion. Need to finish fn first then reload later.
-        setTimeout(location.reload(), 1);
-        return;
-    };
-
-
-    // Line Function ===============================================
-    $scope.editPath = function (pathIndex) {
-        if ($scope.drawLine) $scope.drawLineToggle();
-        if ($scope.editLine) $scope.editLineToggle();
-        $scope.currentPathIndex = pathIndex;
-        genMarkerFromPath($scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path);
-        setWorkingMode(true);
-        return;
-    };
-
-    $scope.doneEditPath = function () {
-        setWorkingMode(false);
-        return;
-    };
-
-    $scope.drawLineToggle = function () {
-        $scope.drawLine = !$scope.drawLine;
-        if ($scope.drawLine) {
-            $scope.controlMsg = "Click anywhere to draw a line from last point. Click [Done] when finish";
-            $scope.drawLineToggleButton = "Done";
-            genMarkerFromPath($scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path);
-        } else {
-            $scope.controlMsg = "";
-            $scope.drawLineToggleButton = "Draw Line";
-        }
-        return;
-    };
-
-    $scope.editLineToggle = function () {
-        $scope.editLine = !$scope.editLine;
-        $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].editable = $scope.editLine;
-        if ($scope.editLine) {
-            $scope.controlMsg = "Click and drag on white dot to reposition. Click and drag fade dot to create dot between current dots.";
-            $scope.editLineToggleButton = "Done";
-            $scope.dataMarkers = [];
-        } else {
-            $scope.controlMsg = "";
-            $scope.editLineToggleButton = "Edit Line";
-            genMarkerFromPath($scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path);
-        }
-        return;
-    };
-
-    $scope.deleteInPath = function (idx) {
-        $scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path.splice(idx, 1);
-        genMarkerFromPath($scope.$storage.mapConfig.polylines[$scope.currentPathIndex].path);
-        return;
-    };
-
-    $scope.markersEvents = {
-        click: function (gMarker, eventName, model) {
-            if (model.$id) {
-                model = model.coords; //use scope portion then
-            }
-        }
-    };
-
-    // cosmetic and helper function =================================
-    var setWorkingMode = function (working) {
-        $scope.working = working;
-        if (working) {
-            $scope.pathSelectClass = "col-sm-2";
-            $scope.pathListClass = "";
-            $scope.pathEditClass = "col-sm-10";
-        } else {
-            $scope.pathSelectClass = "";
-            $scope.pathListClass = "col-sm-4";
-            $scope.pathEditClass = "";
-            $scope.controlMsg = "";
-            $scope.currentPathIndex = 0;
-            $scope.drawLine = false;
-            $scope.editLine = false;
-            $scope.editLineToggleButton = "Edit Line";
-            $scope.drawLineToggleButton = "Draw Line";
-            $scope.dataMarkers = []; // to display path 
-        }
-        return;
-    };
-    setWorkingMode($scope.working);
-
-    var createMarker = function (i, latitude, longitude, idKey) {
-        if (idKey == null) {
-            idKey = "id";
-        }
-
-        // Note, the label* properties are only used if isLabel='true' in the directive.
-        var ret = {
-            options: {
-                draggable: false,
-                labelAnchor: '-6 8',
-                labelContent: i,
-                labelClass: 'labelMarker',
-                icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 5,
-                    strokeWeight: 1,
-                    fillColor: '#FFF',
-                    fillOpacity: 1,
-                }
-            },
-            latitude: latitude,
-            longitude: longitude,
-            title: i
-        };
-        ret[idKey] = i;
-        return ret;
-    };
-
-    var genMarkerFromPath = function (path) {
-        var markers = [];
-        for (var i = 0; i < path.length; i++) {
-            markers.push(createMarker(path[i].id, path[i].latitude, path[i].longitude));
-        }
-        $scope.dataMarkers = markers;
-        return;
-    };
-    */
 });

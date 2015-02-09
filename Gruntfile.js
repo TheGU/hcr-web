@@ -48,6 +48,9 @@ module.exports = function (grunt) {
                     'js/vendor/leaflet-plugins.Google.js': 'leaflet-plugins/layer/tile/Google.js',
                     
                     'js/vendor/pace.min.js': 'pace/pace.min.js',
+                    
+                    'js/vendor/leaflet.label.js': 'Leaflet.label/dist/leaflet.label.js',
+                    'css/leaflet.label.css': 'Leaflet.label/dist/leaflet.label.css',
                 }
             }
         }

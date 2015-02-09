@@ -87,6 +87,16 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         shadowUrl: '',
         shadowRetinaUrl: ''
     };    
+    var boatIcon = {
+        iconUrl: 'images/boatIcon18.png',
+        iconRetinaUrl: 'images/boatIcon18.png',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [9, 0],
+        labelAnchor: [9, 0],
+        shadowUrl: '',
+        shadowRetinaUrl: ''
+    };        
 
 
     // init ===============================================    
@@ -191,11 +201,13 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         leafletData.getMap().then(function (map) {
             map.eachLayer(function(layer){
                 for(l in layer._latlngs){
+                    var path_id = 'p' + layer._leaflet_id;
                     $scope.stationMarker.push({
-                        layer_id: 'p' + layer._leaflet_id,
+                        layer_id: path_id,
                         lat: layer._latlngs[l].lat,
                         lng: layer._latlngs[l].lng,
                         station: (layer._latlngs[l].station)?layer._latlngs[l].station:false,
+                        station_type: ($scope.path[path_id].station_type)?$scope.path[path_id].station_type:'canal',
                         name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',
                     });
                 }                
@@ -210,7 +222,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                         focus: false,
                         title: "Marker",
                         draggable: false,
-                        icon: stationIcon,
+                        icon: (marker_point.station_type==="rail")?stationIcon:boatIcon,
                         label: {
                             message: marker_point.name,
                             options: {

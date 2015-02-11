@@ -32,11 +32,13 @@
                      defaults="map.defaults"
                      layers="map.layers"
                      markers="map.markers"
-                     geojson="geojson"></leaflet>    
+                     geojson="geojson"
+                     bounds="map.bounds"
+                     ></leaflet>    
         </div>
         
         <div class="row" ng-cloak class="ng-cloak">
-            {{ currentPath }}
+            {{ map.bounds }} {{ currentPath }}
             <div ng-if="editPath">
                 Path : {{ currentPath.name || currentPath.id }}
                 <h3>
@@ -162,6 +164,10 @@
                 </div> 
             </div>
 
+        </div>      
+        
+        <div class="row" ng-cloak class="ng-cloak">
+            <button class="btn btn-success" ng-click="genTrips()">GenTrip</button>
         </div>        
     </div>
 
@@ -176,6 +182,7 @@
     <script src="js/vendor/angular-local-storage.min.js"></script>
     <script src="js/vendor/bootstrap-colorpicker-module.min.js"></script>
     
+    <script src="js/mapgraph.js"></script>    
     <script src="js/path-new.js"></script>
 </body>
 

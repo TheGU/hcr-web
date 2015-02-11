@@ -4,14 +4,15 @@ myApp.config(function (localStorageServiceProvider) {
         .setPrefix('hcr-map-path')
         .setNotify(true, true);
 });
-myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, leafletData, localStorageService) {
+myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, leafletData, leafletBoundsHelpers, localStorageService) {
     angular.extend($scope, {
         map: {
             center: {
-                lat: 13.751390740782975,
-                lng: 100.62652587890625,
-                zoom: 11
+                //lat: 13.751390740782975,
+                //lng: 100.62652587890625,
+                //zoom: 11
             },
+            bounds: {"northEast":{"lat":13.838079936422476,"lng":100.74840545654295},"southWest":{"lat":13.63797952487553,"lng":100.34671783447266}},
             controls: {
                 draw: {
                     marker: false,
@@ -244,4 +245,22 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         $scope.currentArea = null;
         updateMarker();
     };
+    
+    
+    
+    // Generate Part
+    $scope.genTrips = function(){
+        var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
+        var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
+        
+        var gt = new GenTrips(topleft, bottomright);
+        
+        var trips = gt.gen_uniform(3000);
+        leafletData.getMap().then(function (map) {
+            for(var t = 0; t<trips.length; t++){
+                var polyline = L.polyline(trips[t], {weight: 1, color: 'red'}).addTo(map);   
+            }
+        });
+    }
+    
 });

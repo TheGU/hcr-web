@@ -11,7 +11,7 @@
 </head>
 
 <body ng-controller="PollController">
-    <form role="form" ng-submit="submitPoll()" name="pollForm">
+    <form role="form" ng-submit="submitPoll()" name="pollForm" >
         <div class="container">
             <div class="pull-right" style="margin:10px 0;" align="right">
                 <img src="images/rockefeller%20foundation.jpg" style="height:80px;"><br/>
@@ -30,7 +30,7 @@
             </div>
 
             <hr/>
-            <div class="row" ng-show="!savingForm">
+            <div class="row" ng-show="!savingForm"  ng-cloak class="ng-cloak">
                 <div class="container">           
                     
                     <h3 ng-if="setMarkerStatus===0">

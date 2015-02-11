@@ -211,42 +211,40 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         var markers = {};
         $scope.stationMarker = [];
         
-        leafletData.getMap().then(function (map) {
-            map.eachLayer(function(layer){
-                for(l in layer._latlngs){
-                    var path_id = 'p' + layer._leaflet_id;
-                    $scope.stationMarker.push({
-                        layer_id: path_id,
-                        lat: layer._latlngs[l].lat,
-                        lng: layer._latlngs[l].lng,
-                        station: (layer._latlngs[l].station)?layer._latlngs[l].station:false,
-                        station_type: $scope.path[path_id].station_type,
-                        name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',
-                    });
-                }                
-            });  
-            
-            for(m in $scope.stationMarker){
-                var marker_point = $scope.stationMarker[m];
-                if (marker_point.station){
-                    markers[marker_point.layer_id + '_' + m] = {
-                        lat: marker_point.lat,
-                        lng: marker_point.lng,
-                        focus: false,
-                        title: "Marker",
-                        draggable: false,
-                        icon: (marker_point.station_type==="rail")?stationIcon:boatIcon,
-                        label: {
-                            message: marker_point.name,
-                            options: {
-                                noHide: true
-                            }
-                        }                       
-                    }
+        $scope.map.controls.edit.featureGroup.eachLayer(function(layer){
+            for(l in layer._latlngs){
+                var path_id = 'p' + layer._leaflet_id;
+                $scope.stationMarker.push({
+                    layer_id: path_id,
+                    lat: layer._latlngs[l].lat,
+                    lng: layer._latlngs[l].lng,
+                    station: (layer._latlngs[l].station)?layer._latlngs[l].station:false,
+                    station_type: $scope.path[path_id].station_type,
+                    name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',
+                });
+            }                
+        });  
+
+        for(m in $scope.stationMarker){
+            var marker_point = $scope.stationMarker[m];
+            if (marker_point.station){
+                markers[marker_point.layer_id + '_' + m] = {
+                    lat: marker_point.lat,
+                    lng: marker_point.lng,
+                    focus: false,
+                    title: "Marker",
+                    draggable: false,
+                    icon: (marker_point.station_type==="rail")?stationIcon:boatIcon,
+                    label: {
+                        message: marker_point.name,
+                        options: {
+                            noHide: true
+                        }
+                    }                       
                 }
             }
-            $scope.map.markers = markers;            
-        });
+        }
+        $scope.map.markers = markers;            
     };
     
     $scope.doneEdit = function () {
@@ -260,27 +258,36 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     
     
-    // Generate Part
+    // Generate Part =====================================
     $scope.trips = [];
     $scope.gen_trips_number = 10;
+    $scope.trips_layer = null;
+    $scope.remain_layer = null;
+    $scope.switch_layer = null;
 
     $scope.genTrips = function(){
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
 
         $scope.trips = new GenTrips(topleft, bottomright).gen_uniform($scope.gen_trips_number);
+        
         leafletData.getLayers().then(function (layers) {
+            layers.overlays.trips_layer.clearLayers();
             for(var t = 0; t< $scope.trips.length; t++){
                 var polyline = L.polyline($scope.trips[t], {weight: 1, color: 'red', clickable: false}).addTo(layers.overlays.trips_layer);   
             }
+            layers.overlays.trips_layer.eachLayer(function(layer){layer.bringToBack();});
+            $scope.trips_layer = layers.overlays.trips_layer;
         });
-        
+        $scope.map.controls.edit.featureGroup.bringToFront();
+        updateMarker();
     };
+    
     
     $scope.network = {};
     $scope.rail_adv_factor = 3;
     $scope.canal_adv_factor = 3;
-    $scope.max_walk_distance = 5;
+    $scope.max_walk_distance = 1;
     var INFTY = 10000;
     var DIST_SCALE = 0.009041543572655762;
     

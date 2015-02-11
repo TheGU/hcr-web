@@ -93,7 +93,7 @@
                         <th>longitude</th>
                         <th>action</th>
                     </tr>
-                    <tr ng-repeat="m in currentPath.layer">
+                    <tr ng-repeat="m in currentPath._latlngs">
                         <td>
                             {{m.id}}
                         </td>
@@ -167,7 +167,10 @@
         </div>      
         
         <div class="row" ng-cloak class="ng-cloak">
-            <button class="btn btn-success" ng-click="genTrips()">GenTrip</button>
+            <button class="btn btn-success" ng-click="genTrips()">Gen Trip</button>
+            <button class="btn btn-success" ng-click="genNetwork()">Gen Network</button>
+            <div>network : {{ network }}</div>
+            <div>path : {{ path }}</div>
         </div>        
     </div>
 

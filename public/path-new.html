@@ -22,7 +22,41 @@
 
     <div class="container">
         <div class="row">
-            <h2>Path Creator</h2>
+            <h2>Path Creator <small>{{ state }}</small></h2>
+            <div style="float:right;top:-10px;" ng-cloak class="ng-cloak">
+                <div class="form-inline">
+                    
+                  <div class="form-group" ng-show="state==='gentrip'">
+                    <label>Trips Gen</label>
+                    <input type="text" class="form-control" placeholder="Trips Gen : 1 - 10000" ng-model="gen_trips_number">
+                  </div>
+                  <div class="form-group" ng-show="state==='gentrip'">
+                    <label>Max Walk Distance (0:unlimit)</label>
+                    <input type="text" class="form-control" placeholder="Max Walk : 0.1 - 100" ng-model="max_walk_distance">
+                  </div>
+                    
+                  <div class="form-group" ng-show="state==='gennetwork'">
+                    <label>Rail Advantage Factor</label>
+                    <input type="text" class="form-control" placeholder="Rail Adv Factor : " ng-model="rail_adv_factor">
+                  </div>
+                  <div class="form-group" ng-show="state==='gennetwork'">
+                    <label>Canal Advantage Factor</label>
+                    <input type="text" class="form-control" placeholder="Canal Adv Factor : " ng-model="canal_adv_factor">
+                  </div>                    
+                    
+                    <img ng-if="state==='loading'" src="images/ajax-loader.gif">
+                    <button class="btn btn-success" ng-click="startGen()" ng-if="state==='drawmap'">Done Path Edit</button>
+                    <button class="btn btn-success" ng-click="genTrips()" ng-if="state==='gentrip'">Gen Trip</button>
+                    <button class="btn btn-success" ng-click="genNetwork()" ng-if="state==='gennetwork'">Gen Network</button>
+                    <button class="btn btn-success" ng-click="genTripResult()" ng-if="state==='genresult'">Gen Result</button>                    
+                </div>
+            </div>    
+            <div ng-cloak class="ng-cloak">
+                Trips Number : {{ gen_trips_number }},
+                Max Walk : {{ max_walk_distance }},
+                Rail Advantage Factor : {{ rail_adv_factor }},
+                Canal Advantage Factor : {{ canal_adv_factor }}
+            </div>            
         </div>
 
         <div class="row">
@@ -38,7 +72,17 @@
         </div>
         
         <div class="row" ng-cloak class="ng-cloak">
-            {{ map.bounds }} {{ currentPath }}
+            <div ng-if="state==='done'">
+                Trip Stats <br />
+                total_trips: {{ tripStats.total_trips }}<br />
+                original avarage distance: {{ tripStats.org_avg_dist }}<br />
+                % switch: {{ tripStats.switch }}<br />
+                <span ng-if="tripStats.switched_trips>0">
+                [switch-only-stat] avarage distance before switch: {{ tripStats.switch_stat_before }}<br />
+                [switch-only-stat] avarage distance after switch: {{ tripStats.switch_stat_after }} ({{ tripStats.switch_stat_after_pc }}% faster)<br />
+                </span>
+            </div>            
+            
             <div ng-if="editPath">
                 Path : {{ currentPath.name || currentPath.id }}
                 <h3>
@@ -163,30 +207,7 @@
                     </div>                    
                 </div> 
             </div>
-
-        </div>      
-        
-        <div class="row" ng-cloak class="ng-cloak">
-            <button class="btn btn-success" ng-click="genTrips()">Gen Trip</button>
-            <button class="btn btn-success" ng-click="genNetwork()">Gen Network</button>
-            <button class="btn btn-success" ng-click="getTripResult()">Gen Result</button>
-            <div>
-                <input type="text" class="form-control" placeholder="Rail Adv Factor : " ng-model="rail_adv_factor">
-                <input type="text" class="form-control" placeholder="Canal Adv Factor : " ng-model="canal_adv_factor">
-                <input type="text" class="form-control" placeholder="Trips Gen : 1 - 10000" ng-model="gen_trips_number">
-                <input type="text" class="form-control" placeholder="Max Walk : 0.1 - 100" ng-model="max_walk_distance">
-                Trip Stats <br />
-                total_trips: {{ tripStats.total_trips }}<br />
-                original avarage distance: {{ tripStats.org_avg_dist }}<br />
-                % switch: {{ tripStats.switch }}<br />
-                <span ng-if="tripStats.switched_trips>0">
-                [switch-only-stat] avarage distance before switch: {{ tripStats.switch_stat_before }}<br />
-                [switch-only-stat] avarage distance after switch: {{ tripStats.switch_stat_after }} ({{ tripStats.switch_stat_after_pc }}% faster)<br />
-                </span>
-            </div>
-            <div>network : {{ network }}</div>
-            <div>path : {{ path }}</div>
-        </div>        
+        </div>             
     </div>
 
     <script src="js/vendor/bootstrap-without-jquery.min.js"></script>

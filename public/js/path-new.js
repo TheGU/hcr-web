@@ -71,15 +71,15 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 },
                 overlays: {
                     trips_layer: {
-                        "name": "Trip data",
+                        "name": "All Trip data",
                         "type": "group",
                         "visible": true
                     },
                     switch_layer: {
-                        "name": "Switch data",
+                        "name": "Switch Trip",
                         "type": "group",
-                        "visible": true
-                    }
+                        "visible": false
+                    }                  
                 }                
             },
             markers: {},
@@ -133,7 +133,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             drawnItems.addLayer(layer);
             
             if (type === 'polyline') {
-                $scope.path['p' + layer._leaflet_id] = {
+                var id = 'p' + layer._leaflet_id;
+                $scope.path[id] = {
                     id: layer._leaflet_id,
                     type: type,
                     name: '',
@@ -141,6 +142,9 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     options: layer.options,
                     _latlngs: layer._latlngs
                 };
+                for(var i in $scope.path[id]._latlngs){
+                    $scope.path[id]._latlngs[i].station = true;
+                }
             } else {
                 $scope.area['a' + layer._leaflet_id] = {
                     id: layer._leaflet_id,
@@ -218,7 +222,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     layer_id: path_id,
                     lat: layer._latlngs[l].lat,
                     lng: layer._latlngs[l].lng,
-                    station: (layer._latlngs[l].station)?layer._latlngs[l].station:false,
+                    station: layer._latlngs[l].station,
                     station_type: $scope.path[path_id].station_type,
                     name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',
                 });
@@ -261,15 +265,53 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     // Generate Part =====================================
     $scope.trips = [];
     $scope.gen_trips_number = 10;
-    $scope.trips_layer = null;
-    $scope.remain_layer = null;
-    $scope.switch_layer = null;
+    
+    $scope.network = {};
+    $scope.rail_adv_factor = 3;
+    $scope.canal_adv_factor = 3;
+    $scope.max_walk_distance = 0;
 
+    $scope.tripResult = [];
+    $scope.tripStats = {};  
+    
+    $scope.state = "drawmap";
+
+    var change_state = function(state){
+        /*
+        if(state === "drawmap"){
+            state = "gentrip";
+        }else if(state === "gentrip"){
+            state = "gennetwork";
+        }else if(state === "gennetwork"){
+            state = "genresult";
+        }else if(state === "genresult"){
+            state = "done";
+        }else{
+            state = "drawmap";
+        }
+        */
+        $scope.state = state;
+    };  
+    
+    $scope.startGen = function(){
+        $scope.state = 'loading';
+        if($scope.currentLayer)
+            $scope.currentLayer.editing.disable();
+        $scope.editPath = false;
+        $scope.editArea = false;
+        $scope.currentPath = null;
+        $scope.currentArea = null;     
+        
+        change_state('gentrip');        
+    };
+    
     $scope.genTrips = function(){
+        change_state('loading');   
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
+        var trips_number = $scope.gen_trips_number;
 
-        $scope.trips = new GenTrips(topleft, bottomright).gen_uniform($scope.gen_trips_number);
+        $scope.trips = new GenTrips(topleft, bottomright).gen_uniform(trips_number);
         
         leafletData.getLayers().then(function (layers) {
             layers.overlays.trips_layer.clearLayers();
@@ -277,129 +319,39 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 var polyline = L.polyline($scope.trips[t], {weight: 1, color: 'red', clickable: false}).addTo(layers.overlays.trips_layer);   
             }
             layers.overlays.trips_layer.eachLayer(function(layer){layer.bringToBack();});
-            $scope.trips_layer = layers.overlays.trips_layer;
         });
+        
         $scope.map.controls.edit.featureGroup.bringToFront();
         updateMarker();
+        change_state('gennetwork');
     };
     
-    
-    $scope.network = {};
-    $scope.rail_adv_factor = 3;
-    $scope.canal_adv_factor = 3;
-    $scope.max_walk_distance = 1;
-    var INFTY = 10000;
-    var DIST_SCALE = 0.009041543572655762;
-    
-    $scope.genNetwork = function(){  
-        //var mg = new MapGraph();
-        var max_walk_distance = $scope.max_walk_distance;
-    
-        var node_count = 0;
-        var network = {};
-        
-        var dbound = max_walk_distance * DIST_SCALE;
-        
-        
-        // create network
-        for(var line in $scope.path){
-            var layer = $scope.path[line];
-            var last_id = '';
-            for(var l in layer._latlngs){
-                var node_id = 'p' + node_count;
-                network[node_id] = {
-                    lat: layer._latlngs[l].lat,
-                    lng: layer._latlngs[l].lng,                           
-                    station: (layer._latlngs[l].station)?layer._latlngs[l].station:false,
-                    station_type: layer.station_type, 
-                    name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',                        
-                    connected: {},
-                }
-
-                if(last_id){
-                    var d = distance(
-                        network[node_id].lat,
-                        network[node_id].lng,
-                        network[last_id].lat,
-                        network[last_id].lng);
-                    if(layer.station_type === 'canal'){
-                        d = d / $scope.canal_adv_factor;
-                    }else if(layer.station_type === 'rail'){
-                        d = d / $scope.rail_adv_factor;
-                    }
-                    network[node_id].connected[last_id] = d;
-                    network[last_id].connected[node_id] = d;
-                }
-
-                last_id = node_id;
-                node_count++;
-            }     
-        };  
-        
-        // connect walkable station
-        for(var i in network){
-            if(!network[i].station)continue;
-            for(var j in network){
-                if(i===j || !network[j].station)continue;
-                
-                var dist = distance(
-                    network[i].lat,
-                    network[i].lng,
-                    network[j].lat,
-                    network[j].lng); 
-                if(dist < dbound){
-                    network[i].connected[j] = dist;
-                    network[j].connected[i] = dist;               
-                }
-            }
-        }
-
-        // asap
-        // !!!! it not array, not sure this will create bug or not !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        for(var k in network){
-            for(var i in network){
-                if(!(k in network[i].connected))continue;
-                
-                for(var j in network){
-                    if(!(j in network[k].connected))continue;
-                    
-                    if(i===j)continue;
-                        
-                    var old_d = INFTY;
-                    if(j in network[i].connected)
-                        old_d = network[i].connected[j];
-                    if(network[i].connected[k] + network[k].connected[j] < old_d) {
-                      network[i].connected[j] = network[i].connected[k] + network[k].connected[j];
-                    }                    
-                }
-            }  
-        }
+    $scope.genNetwork = function(){
+        change_state('loading');
+        var network = new GenNetwork(
+            $scope.path,
+            $scope.canal_adv_factor,
+            $scope.rail_adv_factor,
+            $scope.max_walk_distance,
+            change_state
+        );    
         $scope.network = network;
-    };
-    
-    $scope.tripResult = [];
-    $scope.shows_reject = false;
-    $scope.tripStats = {};
-    $scope.max_walk_distance = 0.5;
-    $scope.getTripResult = function(){
-        var tripResult = [];
-        var trips = $scope.trips;
-        var shows_reject = $scope.shows_reject;
-        var max_walk_distance = $scope.max_walk_distance;
+    };    
         
-        // Magic. Do not change.
-        var DIST_SCALE = 0.009041543572655762;
-        var DIST_RATIO = 2./0.140961;
-        var INFTY = 10000;
-        var MAX_DISTANCE = 10000;
+
+    $scope.genTripResult = function(){
+        change_state('loading');
+        
+        var trips = $scope.trips;
+        var network = $scope.network;
+        var max_walk_distance = $scope.max_walk_distance;
+        var tripResult = [];    
 
         var dist_bound = MAX_DISTANCE;        
-        
-        if(max_walk_distance)
+        if(max_walk_distance>0)
             dist_bound = max_walk_distance * DIST_SCALE;
-        
+
         var network_distance = function(sx,sy,tx,ty,dbound){
-            var network = $scope.network; 
             var dstart = {};
             var dterm = {};
             for(var i in network){
@@ -415,20 +367,20 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     dterm[i] = INFTY + 1;
                 }
             }
-            
+
             var mind = INFTY;
             for(var i in network){
                 if(!network[i].station)continue;
-                
+
                 var d1 = dstart[i];
                 if(d1 > mind) continue;
-                
+
                 for(var j in network){
                     if((j===i)||(!network[j].station))continue;
-                    
+
                     var dd = (d1 + ((j in network[i].connected)?network[i].connected[j]:INFTY+1));
                     if(dd > mind) continue;
-                    
+
                     dd = dd + dterm[j];
                     if(dd < mind){
                         mind = dd;   
@@ -437,7 +389,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             }
             return mind;
         };
-        
+
         for(var t = 0; t<trips.length; t++){
             //var polyline = L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}).addTo(map);   
             var sx = trips[t][0][0],
@@ -447,10 +399,9 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             var direct_distance = distance(sx,sy,tx,ty);
             var net_distance = network_distance(sx,sy,tx,ty,dist_bound);
             tripResult.push([direct_distance,net_distance]);
-        }        
-        $scope.tripResult = tripResult;
+        }            
         
-        
+        // Gen Result And Draw map
         var total_trips = trips.length;
         var total_org_distance = 0;
         var total_org_switch_distance = 0;
@@ -458,39 +409,32 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         var switched_trips = 0;
 
         var switch_trips = [];
+        var remain_trips = [];
         for(var t = 0; t<trips.length; t++){
             var direct_distance = tripResult[t][0];
             var rail_distance = tripResult[t][1];
             var is_using = false;
-            var color = "red";
             var travel_distance;
 
             total_org_distance += direct_distance;
             if( rail_distance*1.2 < direct_distance){
                 is_using = true;
-                color = 'blue';
                 switched_trips += 1;
                 travel_distance = rail_distance;
                 total_org_switch_distance += direct_distance;
                 total_new_switch_distance += rail_distance;
+                
+                switch_trips.push(L.polyline(trips[t], {weight: 1, color: 'blue', clickable: false}));
+                
             }else{
                 is_using = false;
                 color = 'red';
                 travel_distance = direct_distance;
-            }
-
-            if(shows_reject){
-                if(!is_using){
-                    switch_trips.push(L.polyline(trips[t], {weight: 1, color: color, clickable: false}));
-                    //var polyline = L.polyline(trips[t], {weight: 1, color: color, clickable: false}).addTo(map);   
-                }
-            }else{
-                if(is_using){
-                    switch_trips.push(L.polyline(trips[t], {weight: 1, color: color, clickable: false}));
-                    //var polyline = L.polyline(trips[t], {weight: 1, color: color, clickable: false}).addTo(map);   
-                }
+                
+                remain_trips.push(L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}));
             }
         }   
+        
         $scope.tripStats = {
             switched_trips: switched_trips,
             total_trips: total_trips,
@@ -501,12 +445,19 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             switch_stat_after_pc: (switched_trips > 0)?100 - total_new_switch_distance*100/total_org_switch_distance:0
         };     
         
-        leafletData.getLayers().then(function (layers) {
-            for(i in switch_trips){
-                switch_trips[i].addTo(layers.overlays.switch_layer);
-            }
-        });  
-        
-
+        var drawMap = function(trips_data){
+            leafletData.getLayers().then(function (layers) {
+                layers.overlays.trips_layer.clearLayers();
+                for(var i in trips_data){
+                    switch_trips[i].addTo(layers.overlays.switch_layer);
+                }
+                
+                for(var i in remain_trips){
+                    remain_trips[i].addTo(layers.overlays.trips_layer);
+                } 
+            });  
+        };
+        drawMap(switch_trips);        
+        change_state('done');
     }
 });

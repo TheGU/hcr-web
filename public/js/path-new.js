@@ -68,7 +68,19 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                         layerType: 'HYBRID',
                         type: 'google'
                     }
-                }
+                },
+                overlays: {
+                    trips_layer: {
+                        "name": "Trip data",
+                        "type": "group",
+                        "visible": true
+                    },
+                    switch_layer: {
+                        "name": "Switch data",
+                        "type": "group",
+                        "visible": true
+                    }
+                }                
             },
             markers: {},
             area: {},
@@ -129,7 +141,6 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     options: layer.options,
                     _latlngs: layer._latlngs
                 };
-             
             } else {
                 $scope.area['a' + layer._leaflet_id] = {
                     id: layer._leaflet_id,
@@ -251,27 +262,31 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     // Generate Part
     $scope.trips = [];
+    $scope.gen_trips_number = 10;
+
     $scope.genTrips = function(){
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
 
-        $scope.trips = new GenTrips(topleft, bottomright).gen_uniform(3000);
-        /*
-        leafletData.getMap().then(function (map) {
-            for(var t = 0; t<trips.length; t++){
-                var polyline = L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}).addTo(map);   
+        $scope.trips = new GenTrips(topleft, bottomright).gen_uniform($scope.gen_trips_number);
+        leafletData.getLayers().then(function (layers) {
+            for(var t = 0; t< $scope.trips.length; t++){
+                var polyline = L.polyline($scope.trips[t], {weight: 1, color: 'red', clickable: false}).addTo(layers.overlays.trips_layer);   
             }
         });
-        */
+        
     };
     
     $scope.network = {};
+    $scope.rail_adv_factor = 3;
+    $scope.canal_adv_factor = 3;
+    $scope.max_walk_distance = 5;
     var INFTY = 10000;
     var DIST_SCALE = 0.009041543572655762;
     
     $scope.genNetwork = function(){  
         //var mg = new MapGraph();
-        var max_walk_distance = 0.5;
+        var max_walk_distance = $scope.max_walk_distance;
     
         var node_count = 0;
         var network = {};
@@ -300,6 +315,11 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                         network[node_id].lng,
                         network[last_id].lat,
                         network[last_id].lng);
+                    if(layer.station_type === 'canal'){
+                        d = d / $scope.canal_adv_factor;
+                    }else if(layer.station_type === 'rail'){
+                        d = d / $scope.rail_adv_factor;
+                    }
                     network[node_id].connected[last_id] = d;
                     network[last_id].connected[node_id] = d;
                 }
@@ -351,8 +371,25 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     };
     
     $scope.tripResult = [];
+    $scope.shows_reject = false;
+    $scope.tripStats = {};
+    $scope.max_walk_distance = 0.5;
     $scope.getTripResult = function(){
         var tripResult = [];
+        var trips = $scope.trips;
+        var shows_reject = $scope.shows_reject;
+        var max_walk_distance = $scope.max_walk_distance;
+        
+        // Magic. Do not change.
+        var DIST_SCALE = 0.009041543572655762;
+        var DIST_RATIO = 2./0.140961;
+        var INFTY = 10000;
+        var MAX_DISTANCE = 10000;
+
+        var dist_bound = MAX_DISTANCE;        
+        
+        if(max_walk_distance)
+            dist_bound = max_walk_distance * DIST_SCALE;
         
         var network_distance = function(sx,sy,tx,ty,dbound){
             var network = $scope.network; 
@@ -360,8 +397,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             var dterm = {};
             for(var i in network){
                 if(network[i].station){
-                    var dstart[i] = distance(sx,sy,network[i].lat,network[i].lng);
-                    var dterm[i] = distance(network[i].lat,network[i].lng,tx,ty);
+                    dstart[i] = distance(sx,sy,network[i].lat,network[i].lng);
+                    dterm[i] = distance(network[i].lat,network[i].lng,tx,ty);
                     if(dstart[i] > dbound)
                         dstart[i] = INFTY + 1;
                     if(dterm[i] > dbound)
@@ -382,7 +419,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 for(var j in network){
                     if((j===i)||(!network[j].station))continue;
                     
-                    var dd = (d1 + ((j in network[i].connected)?network[i].connected[j]:INFTY));
+                    var dd = (d1 + ((j in network[i].connected)?network[i].connected[j]:INFTY+1));
                     if(dd > mind) continue;
                     
                     dd = dd + dterm[j];
@@ -396,26 +433,73 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         
         for(var t = 0; t<trips.length; t++){
             //var polyline = L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}).addTo(map);   
-            var sx = trips[t][0].lat,
-                sy = trips[t][0].lng,
-                tx = trips[t][1].lat,
-                ty = trips[t][1].lng;
+            var sx = trips[t][0][0],
+                sy = trips[t][0][1],
+                tx = trips[t][1][0],
+                ty = trips[t][1][1];
             var direct_distance = distance(sx,sy,tx,ty);
-            var net_distance = network_distance(sx,sy,tx,ty,dbound);
+            var net_distance = network_distance(sx,sy,tx,ty,dist_bound);
             tripResult.push([direct_distance,net_distance]);
         }        
+        $scope.tripResult = tripResult;
         
-        var total_trips = len(trips);
+        
+        var total_trips = trips.length;
         var total_org_distance = 0;
         var total_org_switch_distance = 0;
         var total_new_switch_distance = 0;
         var switched_trips = 0;
+
+        var switch_trips = [];
+        for(var t = 0; t<trips.length; t++){
+            var direct_distance = tripResult[t][0];
+            var rail_distance = tripResult[t][1];
+            var is_using = false;
+            var color = "red";
+            var travel_distance;
+
+            total_org_distance += direct_distance;
+            if( rail_distance*1.2 < direct_distance){
+                is_using = true;
+                color = 'blue';
+                switched_trips += 1;
+                travel_distance = rail_distance;
+                total_org_switch_distance += direct_distance;
+                total_new_switch_distance += rail_distance;
+            }else{
+                is_using = false;
+                color = 'red';
+                travel_distance = direct_distance;
+            }
+
+            if(shows_reject){
+                if(!is_using){
+                    switch_trips.push(L.polyline(trips[t], {weight: 1, color: color, clickable: false}));
+                    //var polyline = L.polyline(trips[t], {weight: 1, color: color, clickable: false}).addTo(map);   
+                }
+            }else{
+                if(is_using){
+                    switch_trips.push(L.polyline(trips[t], {weight: 1, color: color, clickable: false}));
+                    //var polyline = L.polyline(trips[t], {weight: 1, color: color, clickable: false}).addTo(map);   
+                }
+            }
+        }   
+        $scope.tripStats = {
+            switched_trips: switched_trips,
+            total_trips: total_trips,
+            org_avg_dist: (total_org_distance * DIST_RATIO)/total_trips,
+            switch: (switched_trips*100)/total_trips,
+            switch_stat_before: (switched_trips > 0)?(total_org_switch_distance*DIST_RATIO)/switched_trips:0,
+            switch_stat_after: (switched_trips > 0)?(total_new_switch_distance*DIST_RATIO)/switched_trips:0,
+            switch_stat_after_pc: (switched_trips > 0)?100 - total_new_switch_distance*100/total_org_switch_distance:0
+        };     
         
+        leafletData.getLayers().then(function (layers) {
+            for(i in switch_trips){
+                switch_trips[i].addTo(layers.overlays.switch_layer);
+            }
+        });  
         
-        
-        
-        
-        
-        $scope.tripResult = tripResult;
+
     }
 });

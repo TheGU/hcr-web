@@ -4,7 +4,7 @@ myApp.config(function (localStorageServiceProvider) {
         .setPrefix('hcr-map-path')
         .setNotify(true, true);
 });
-myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, leafletData, leafletBoundsHelpers, localStorageService) {
+myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, $window, $timeout, leafletData, leafletBoundsHelpers, localStorageService) {
     angular.extend($scope, {
         map: {
             center: {
@@ -23,6 +23,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                             opacity: 0.8,
                         }
                     },
+                    /*
                     polygon: {
                         allowIntersection: false, // Restricts shapes to simple polygons
                         drawError: {
@@ -49,6 +50,10 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                             opacity: 0.8,
                         }
                     },
+                    */
+                    polygon: false,
+                    circle: false,
+                    rectangle: false
                 },
             },
             layers: {
@@ -116,6 +121,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     $scope.path = {};
     $scope.area = {};
     $scope.stationMarker = [];
+    $scope.start_city = '';
+    $scope.start_city_data = {};
     
     $scope.currentLayer = null;
     $scope.editPath = false;
@@ -123,6 +130,42 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     $scope.currentPath = null;
     $scope.currentArea = null;
 
+    // map init with small size
+    var mapChangeSize = function(size){
+        var mainContainer = angular.element(document.getElementsByClassName("map-container"));
+        mainContainer.css('height', size);
+        mainContainer.css('min-height', size);
+        angular.element(document.getElementsByClassName("leaflet-google-layer")).css('height', size);    
+        leafletData.getMap().then(function(map) {
+            map.invalidateSize();
+        });         
+    };
+    mapChangeSize('170px');
+    
+    var mapBestFit = function(northeast,southwest){
+        leafletData.getMap().then(function(map) {
+            map.invalidateSize();
+            map.fitBounds([
+                northeast,
+                southwest,
+            ]);
+        });        
+    };
+    
+    $scope.mapGeocodeFocus = function(){
+        //https://maps.googleapis.com/maps/api/geocode/json?address=bangkok,+thailand
+        var city = $scope.start_city;
+        if(city){
+            $http.get('http://maps.googleapis.com/maps/api/geocode/json?address=' + city + '&sensor=true').success(function (data) {
+                //$log.log(data);
+                $scope.start_city_data = data.results[0];
+                mapBestFit(data.results[0].geometry.viewport.northeast,data.results[0].geometry.viewport.southwest);
+            })
+            .error(function (data) {
+                $log.log('Error: ' + data);
+            });          
+        }
+    };
 
     var drawnItems = null;
     leafletData.getMap().then(function (map) {
@@ -263,10 +306,12 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     
     // Generate Part =====================================
+    $scope.gen_status = "";
     $scope.trips = [];
-    $scope.gen_trips_number = 10;
+    $scope.gen_trips_number = 1000;
     
     $scope.network = {};
+    $scope.brt_adv_factor = 3;
     $scope.rail_adv_factor = 3;
     $scope.canal_adv_factor = 3;
     $scope.max_walk_distance = 0;
@@ -274,7 +319,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     $scope.tripResult = [];
     $scope.tripStats = {};  
     
-    $scope.state = "drawmap";
+    $scope.state = "setbasic";
 
     var change_state = function(state){
         /*
@@ -293,24 +338,40 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         $scope.state = state;
     };  
     
-    $scope.startGen = function(){
+    $scope.editBasicInfo = function () {
+        $scope.state = 'loading';
+        mapChangeSize('170px');
+        change_state('setbasic');           
+    };
+    
+    $scope.startCreatePath = function(){
+        $scope.state = 'loading';
+        mapChangeSize('500px');
+        mapBestFit($scope.start_city_data.geometry.viewport.northeast, $scope.start_city_data.geometry.viewport.southwest);
+        change_state('drawmap');   
+    };
+    
+    $scope.startSimulate = function(){
         $scope.state = 'loading';
         if($scope.currentLayer)
             $scope.currentLayer.editing.disable();
         $scope.editPath = false;
         $scope.editArea = false;
         $scope.currentPath = null;
-        $scope.currentArea = null;     
+        $scope.currentArea = null;          
         
-        change_state('gentrip');        
+        $scope.gen_status = "Checking data ...";   
+        
+        $timeout(genTrips, 1000);
     };
     
-    $scope.genTrips = function(){
-        change_state('loading');   
+    var genTrips = function(){
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
         var trips_number = $scope.gen_trips_number;
 
+        $scope.gen_status = "Create trips data ...";
+        
         $scope.trips = new GenTrips(topleft, bottomright).gen_uniform(trips_number);
         
         leafletData.getLayers().then(function (layers) {
@@ -321,31 +382,35 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             layers.overlays.trips_layer.eachLayer(function(layer){layer.bringToBack();});
         });
         
-        $scope.map.controls.edit.featureGroup.bringToFront();
-        updateMarker();
-        change_state('gennetwork');
+        $timeout(genNetwork, 3000);
     };
     
-    $scope.genNetwork = function(){
-        change_state('loading');
+    var genNetwork = function(){
+        $scope.gen_status = "Create networks data ...";
+        
         var network = new GenNetwork(
             $scope.path,
             $scope.canal_adv_factor,
             $scope.rail_adv_factor,
-            $scope.max_walk_distance,
-            change_state
+            $scope.brt_adv_factor,            
+            $scope.max_walk_distance
         );    
         $scope.network = network;
+        
+        $scope.map.controls.edit.featureGroup.bringToFront();
+        updateMarker();
+        
+        $timeout(genTripResult, 1000);
     };    
         
 
-    $scope.genTripResult = function(){
-        change_state('loading');
-        
+    var genTripResult = function(){  
         var trips = $scope.trips;
         var network = $scope.network;
         var max_walk_distance = $scope.max_walk_distance;
         var tripResult = [];    
+        
+        $scope.gen_status = "Calculate best travel option for each trip ...";
 
         var dist_bound = MAX_DISTANCE;        
         if(max_walk_distance>0)
@@ -459,5 +524,6 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         };
         drawMap(switch_trips);        
         change_state('done');
+        $scope.gen_status = "Done";
     }
 });

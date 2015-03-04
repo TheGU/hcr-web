@@ -12,7 +12,10 @@ module.exports = function (grunt) {
                 },
                 files: {
                     'js/vendor/angular.min.js': 'angular/angular.min.js',
-                    'js/vendor/angular.min.js.map': 'angular/angular.min.js.map',                    
+                    'js/vendor/angular.min.js.map': 'angular/angular.min.js.map',               
+                    
+                    'js/vendor/angular-route.min.js': 'angular-route/angular-route.min.js',
+                    'js/vendor/angular-route.min.js.map': 'angular-route/angular-route.min.js.map',                      
                     
                     'js/vendor/bootstrap-colorpicker-module.min.js': 'angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js',
                     'css/colorpicker.min.css': 'angular-bootstrap-colorpicker/css/colorpicker.min.css',
@@ -22,7 +25,7 @@ module.exports = function (grunt) {
                     'fonts/glyphicons-halflings-regular.eot': "bootstrap/dist/fonts/glyphicons-halflings-regular.eot",
                     'fonts/glyphicons-halflings-regular.svg': "bootstrap/dist/fonts/glyphicons-halflings-regular.svg",
                     'fonts/glyphicons-halflings-regular.ttf': "bootstrap/dist/fonts/glyphicons-halflings-regular.ttf",
-                    'fonts/glyphicons-halflings-regular.woff': "bootstrap/dist/fonts/glyphicons-halflings-regular.woff",                 
+                    'fonts/glyphicons-halflings-regular.woff': "bootstrap/dist/fonts/glyphicons-halflings-regular.woff",               
                     
                     'js/vendor/angular-leaflet-directive.min.js': 'angular-leaflet-directive/dist/angular-leaflet-directive.min.js',
                     

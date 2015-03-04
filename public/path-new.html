@@ -22,44 +22,83 @@
 
     <div class="container">
         <div class="row">
-            <h2>Path Creator <small>{{ state }}</small></h2>
-            <div style="float:right;top:-10px;" ng-cloak class="ng-cloak">
-                <div class="form-inline">
+            <h2>Path Creator </h2>
+            
+            <div ng-cloak class="ng-cloak" ng-show="state==='setbasic'">
+                
+                <h3>Basic Information</h3>
+                
+                <div class="form-horizontal">
                     
-                  <div class="form-group" ng-show="state==='gentrip'">
-                    <label>Trips Gen</label>
-                    <input type="text" class="form-control" placeholder="Trips Gen : 1 - 10000" ng-model="gen_trips_number">
-                  </div>
-                  <div class="form-group" ng-show="state==='gentrip'">
-                    <label>Max Walk Distance (0:unlimit)</label>
-                    <input type="text" class="form-control" placeholder="Max Walk : 0.1 - 100" ng-model="max_walk_distance">
+                  <div class="form-group">
+                    <label for="start_city" class="col-sm-2 control-label">Start City</label>
+                      <div class="col-sm-4">
+                        <input type="text" class="form-control" name="start_city" id="start_city" placeholder="Enter city name and country : Bangkok, Thailand" 
+                                ng-model="start_city" ng-blur="mapGeocodeFocus()">
+                          
+                      </div>
+                      <div class="col-sm-3">
+                          <p class="form-control-static">{{ start_city_data.formatted_address }}</p>
+                      </div>
                   </div>
                     
-                  <div class="form-group" ng-show="state==='gennetwork'">
-                    <label>Rail Advantage Factor</label>
-                    <input type="text" class="form-control" placeholder="Rail Adv Factor : " ng-model="rail_adv_factor">
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label">Number of Trips</label>
+                      <div class="col-sm-1">
+                        <input type="text" class="form-control" placeholder="1 - 10000" ng-model="gen_trips_number">
+                      </div>
+
+                    <label class="col-sm-2 control-label">Max Walk Distance</label>
+                      <div class="col-sm-1">
+                        <input type="text" class="form-control" placeholder="Max Walk : 0.1 - 100" ng-model="max_walk_distance">
+                      </div>
+                      <div class="col-sm-3">
+                          <p class="form-control-static">Kilometre. (0 = Unlimit walk distance)</p>
+                      </div>
                   </div>
-                  <div class="form-group" ng-show="state==='gennetwork'">
-                    <label>Canal Advantage Factor</label>
-                    <input type="text" class="form-control" placeholder="Canal Adv Factor : " ng-model="canal_adv_factor">
-                  </div>                    
                     
-                    <img ng-if="state==='loading'" src="images/ajax-loader.gif">
-                    <button class="btn btn-success" ng-click="startGen()" ng-if="state==='drawmap'">Done Path Edit</button>
-                    <button class="btn btn-success" ng-click="genTrips()" ng-if="state==='gentrip'">Gen Trip</button>
-                    <button class="btn btn-success" ng-click="genNetwork()" ng-if="state==='gennetwork'">Gen Network</button>
-                    <button class="btn btn-success" ng-click="genTripResult()" ng-if="state==='genresult'">Gen Result</button>                    
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label">BRT Advantage Factor</label>
+                      <div class="col-sm-1">
+                        <input type="text" class="form-control" placeholder="BRT Adv Factor : " ng-model="brt_adv_factor">
+                      </div>
+
+                    <label class="col-sm-2 control-label">Rail Advantage Factor</label>
+                      <div class="col-sm-1">
+                        <input type="text" class="form-control" placeholder="Rail Adv Factor : " ng-model="rail_adv_factor">
+                      </div>
+
+                    <label class="col-sm-2 control-label">Canal Advantage Factor</label>
+                      <div class="col-sm-1">
+                        <input type="text" class="form-control" placeholder="Canal Adv Factor : " ng-model="canal_adv_factor">
+                      </div>
+                  </div>         
+                    
+                  <button class="btn btn-success" ng-click="startCreatePath()">Start Create Network</button>
+            
                 </div>
             </div>    
-            <div ng-cloak class="ng-cloak">
-                Trips Number : {{ gen_trips_number }},
-                Max Walk : {{ max_walk_distance }},
-                Rail Advantage Factor : {{ rail_adv_factor }},
-                Canal Advantage Factor : {{ canal_adv_factor }}
-            </div>            
+            <div ng-cloak class="ng-cloak" ng-show="state!=='setbasic'">        
+                <div>
+                    <button class="btn btn-default" ng-click="editBasicInfo()">Edit Simulator Info</button>
+                    <button class="btn btn-primary" ng-click="startSimulate()">Simulate</button>
+                    <button class="btn btn-info" ng-click="saveNetwork()">Save Network</button>
+                    <img ng-if="state==='loading'" src="images/ajax-loader.gif">  
+                </div>                
+                <div>
+                    <strong>Start City</strong> : {{ start_city_data.formatted_address }}, 
+                    <strong>Simulate Trips</strong> : {{ gen_trips_number }}, 
+                    <strong>Max Walk Distance</strong> : {{ max_walk_distance }}, 
+                    <strong>BRT Adv Factor</strong> : {{ brt_adv_factor }}, 
+                    <strong>Rail Adv Factor</strong> : {{ rail_adv_factor }}, 
+                    <strong>Canal Adv Factor</strong> : {{ canal_adv_factor }}                 
+                </div>
+                <div ng-if="gen_status">
+                    <strong>Status</strong> : {{ gen_status }}
+                </div>
+            </div>
         </div>
-
-        <div class="row">
+        <div class="row" style="margin-top:10px;">
             <leaflet class="map-container"
                      controls="map.controls"  
                      center="map.center"

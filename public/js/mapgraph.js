@@ -27,7 +27,7 @@ var GenTrips = function(topleft,bottomright){
     return this;
 }
 
-var GenNetwork = function(path,canal_adv_factor,rail_adv_factor,max_walk_distance, callback){
+var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,max_walk_distance, callback){
 
     var dbound = max_walk_distance * DIST_SCALE;
     
@@ -60,10 +60,15 @@ var GenNetwork = function(path,canal_adv_factor,rail_adv_factor,max_walk_distanc
                     d = d / canal_adv_factor;
                 }else if(layer.station_type === 'rail'){
                     d = d / rail_adv_factor;
-                }else {
+                }else if(layer.station_type === 'brt'){
+                    d = d / brt_adv_factor;
+                }
+                /*
+                else {
                     d = d / 3.0;
                     console.log('missing d');
                 }
+                */
                 
                 network[node_id].connected[last_id] = d;
                 network[last_id].connected[node_id] = d;

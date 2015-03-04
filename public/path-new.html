@@ -22,7 +22,7 @@
 
     <div class="container">
         <div class="row">
-            <h2>Path Creator </h2>
+            <h2>Path Creator</h2>
             
             <div ng-cloak class="ng-cloak" ng-show="state==='setbasic'">
                 
@@ -93,7 +93,7 @@
                     <strong>Rail Adv Factor</strong> : {{ rail_adv_factor }}, 
                     <strong>Canal Adv Factor</strong> : {{ canal_adv_factor }}                 
                 </div>
-                <div ng-if="gen_status">
+                <div ng-if="gen_status && state!=='done'">
                     <strong>Status</strong> : {{ gen_status }}
                 </div>
             </div>

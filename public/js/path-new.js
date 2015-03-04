@@ -339,16 +339,14 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     };  
     
     $scope.editBasicInfo = function () {
-        $scope.state = 'loading';
-        mapChangeSize('170px');
-        change_state('setbasic');           
+        $scope.state = 'setbasic';
+        mapChangeSize('170px');  
     };
     
     $scope.startCreatePath = function(){
-        $scope.state = 'loading';
+        $scope.state = 'drawmap';
         mapChangeSize('500px');
         mapBestFit($scope.start_city_data.geometry.viewport.northeast, $scope.start_city_data.geometry.viewport.southwest);
-        change_state('drawmap');   
     };
     
     $scope.startSimulate = function(){
@@ -359,6 +357,12 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         $scope.editArea = false;
         $scope.currentPath = null;
         $scope.currentArea = null;          
+        
+        leafletData.getMap().then(function(map) {
+            map.touchZoom.disable();
+            map.doubleClickZoom.disable();
+            map.scrollWheelZoom.disable();   
+        });         
         
         $scope.gen_status = "Checking data ...";   
         

@@ -27,19 +27,16 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-app.get('/path', function (req, res) {
-    res.sendFile(__dirname + '/public/path.html');
+app.get('/about', function (req, res) {
+    res.sendFile(__dirname + '/public/about.html');
 });
 
-app.get('/path-new', function (req, res) {
+app.get('/path', function (req, res) {
     res.sendFile(__dirname + '/public/path-new.html');
 });
 
-app.get('/poll', function (req, res) {
-    res.sendFile(__dirname + '/public/poll.html');
-});
 
-app.get('/poll-new', function (req, res) {
+app.get('/poll', function (req, res) {
     res.sendFile(__dirname + '/public/poll-new.html');
 });
 

@@ -118,6 +118,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
 
 
     // init ===============================================    
+    $scope.state = "setbasic";
     $scope.path = {};
     $scope.area = {};
     $scope.stationMarker = [];
@@ -140,7 +141,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             map.invalidateSize();
         });         
     };
-    mapChangeSize('170px');
+    mapChangeSize('230px');
     
     var mapBestFit = function(northeast,southwest){
         leafletData.getMap().then(function(map) {
@@ -318,8 +319,6 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
 
     $scope.tripResult = [];
     $scope.tripStats = {};  
-    
-    $scope.state = "setbasic";
 
     var change_state = function(state){
         /*
@@ -340,12 +339,12 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     $scope.editBasicInfo = function () {
         $scope.state = 'setbasic';
-        mapChangeSize('170px');  
+        mapChangeSize('230px');  
     };
     
     $scope.startCreatePath = function(){
         $scope.state = 'drawmap';
-        mapChangeSize('500px');
+        mapChangeSize('600px');
         mapBestFit($scope.start_city_data.geometry.viewport.northeast, $scope.start_city_data.geometry.viewport.southwest);
     };
     

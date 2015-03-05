@@ -88,6 +88,16 @@ app.get('/api/path/:pathId', function (req, res) {
         res.json(data);
     });
 });
+app.post('/api/path/:pathId', function (req, res) {   
+    Path.findOneAndUpdate(
+        {"pathId": req.params.pathId},
+        {"data": req.body},
+        function (err, data) {
+            if (err)
+                res.send(err);
+            res.json(data);
+        });
+});
 app.post('/api/path', function (req, res) {
     Seqs.increment('pathId', function (err, data) {
         if(err){

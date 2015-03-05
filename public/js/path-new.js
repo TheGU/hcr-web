@@ -4,10 +4,7 @@ myApp.config(function (localStorageServiceProvider) {
         .setPrefix('hcr-map-path')
         .setNotify(true, true);
 });
-myApp.config(function($locationProvider) {
-    $locationProvider.html5Mode(true);
-});
-myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, $location, $window, $timeout, leafletData, leafletBoundsHelpers, localStorageService) {
+myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, $window, $timeout, leafletData, leafletBoundsHelpers, localStorageService) {
     angular.extend($scope, {
         info: {
             simulator_name: '',
@@ -138,6 +135,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     // internal value
     $scope.state = "setbasic";
+    $scope.network_modify = false;
+    $scope.save_edit_status = '';
     $scope.path = {};
     $scope.area = {};
     $scope.stationMarker = [];
@@ -186,12 +185,12 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         }
     };
 
-    var url = $location.path();
+    var url = $window.location.pathname;
     if(url.length > 5){
         // load with path id
         $http.get('/api' + url).success(function (data) {
-            var log;
-            //$log.log(data);
+            $scope.network_modify = true;
+            
             $scope.map.bounds = data.data.map.bounds;
             $scope.map.center = data.data.map.center;
             $scope.info = data.data.info;
@@ -573,9 +572,10 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         $scope.gen_status = "Done";
     };
     
+    
     $scope.saveNetwork = function(){       
-        
-        $http.post('/api/path/', {
+        $scope.save_edit_status = 'Saving <i class="fa fa-cog fa-spin"></i>';
+        $http.post('/api' + url, {
             'map':{
                 'center': $scope.map.center,
                 'bounds': $scope.map.bounds,
@@ -585,6 +585,26 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         })
         .success(function (data) {
             $log.log(data);
+            $scope.save_edit_status = "Save Done"
+        })
+        .error(function (data) {
+            $log.log('Error: ' + data);
+        });        
+    };
+    
+    $scope.saveNewNetwork = function(){       
+        $http.post('/api/path/', {
+            'map':{
+                'center': $scope.map.center,
+                'bounds': $scope.map.bounds,
+            },
+            'path':$scope.path,
+            'info':$scope.info
+        })
+        .success(function (data) {
+            //$log.log(data);
+            //$location.path(data.pathId);
+            $window.location.href = '/path/' + data.pathId;
         })
         .error(function (data) {
             $log.log('Error: ' + data);

@@ -15,7 +15,10 @@ module.exports = function (grunt) {
                     'js/vendor/angular.min.js.map': 'angular/angular.min.js.map',               
                     
                     'js/vendor/angular-route.min.js': 'angular-route/angular-route.min.js',
-                    'js/vendor/angular-route.min.js.map': 'angular-route/angular-route.min.js.map',                      
+                    'js/vendor/angular-route.min.js.map': 'angular-route/angular-route.min.js.map',     
+                    
+                    'js/vendor/angular-sanitize.min.js': 'angular-sanitize/angular-sanitize.min.js',
+                    'js/vendor/angular-sanitize.min.js.map': 'angular-sanitize/angular-sanitize.min.js.map',                       
                     
                     'js/vendor/bootstrap-colorpicker-module.min.js': 'angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js',
                     'css/colorpicker.min.css': 'angular-bootstrap-colorpicker/css/colorpicker.min.css',

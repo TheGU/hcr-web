@@ -1,10 +1,10 @@
-var myApp = angular.module('hcr-map-path', ['leaflet-directive', 'LocalStorageModule','colorpicker.module']);
+var myApp = angular.module('hcr-map-path', ['ngSanitize', 'leaflet-directive', 'LocalStorageModule','colorpicker.module']);
 myApp.config(function (localStorageServiceProvider) {
     localStorageServiceProvider
         .setPrefix('hcr-map-path')
         .setNotify(true, true);
 });
-myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, $window, $timeout, leafletData, leafletBoundsHelpers, localStorageService) {
+myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeout, $http, $window, $timeout, leafletData, leafletBoundsHelpers, localStorageService) {
     angular.extend($scope, {
         info: {
             simulator_name: '',
@@ -82,12 +82,12 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 },
                 overlays: {
                     trips_layer: {
-                        "name": "All Trip data",
+                        "name": "Trip outside of network",
                         "type": "group",
                         "visible": true
                     },
                     switch_layer: {
-                        "name": "Switch Trip",
+                        "name": "Hybrid trip",
                         "type": "group",
                         "visible": false
                     }                  
@@ -103,9 +103,10 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     //$scope.editableFeatureGroup = new L.FeatureGroup();
     //$scope.map.controls.draw.edit = {featureGroup: $scope.editableFeatureGroup};
     
+    /*
     var stationIcon = {
-        iconUrl: 'images/stationIcon18.png',
-        iconRetinaUrl: 'images/stationIcon18.png',
+        iconUrl: '/images/stationIcon18.png',
+        iconRetinaUrl: '/images/stationIcon18.png',
         iconSize: [18, 18],
         iconAnchor: [9, 9],
         popupAnchor: [9, 0],
@@ -114,8 +115,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         shadowRetinaUrl: ''
     };    
     var boatIcon = {
-        iconUrl: 'images/boatIcon18.png',
-        iconRetinaUrl: 'images/boatIcon18.png',
+        iconUrl: '/images/boatIcon18.png',
+        iconRetinaUrl: '/images/boatIcon18.png',
         iconSize: [18, 18],
         iconAnchor: [9, 9],
         popupAnchor: [9, 0],
@@ -123,7 +124,25 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         shadowUrl: '',
         shadowRetinaUrl: ''
     };        
-
+    */
+    var stationIcon = {
+            type: 'div',
+            iconSize: [20, 20],
+            html: '<i class="fa fa-train fa-fw"></i>',
+            popupAnchor:  [10, 0]
+        };
+    var boatIcon = {
+            type: 'div',
+            iconSize: [20, 20],
+            html: '<i class="fa fa-ship fa-fw"></i>',
+            popupAnchor:  [10, 0]
+        };
+    var brtIcon = {
+            type: 'div',
+            iconSize: [20, 20],
+            html: '<i class="fa fa-bus fa-fw"></i>',
+            popupAnchor:  [10, 0]
+        };    
 
     // init ===============================================    
     // Check url if it need to load data
@@ -191,6 +210,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         $http.get('/api' + url).success(function (data) {
             $scope.network_modify = true;
             
+            $scope.state = 'drawmap';
+            mapChangeSize('600px');
             $scope.map.bounds = data.data.map.bounds;
             $scope.map.center = data.data.map.center;
             $scope.info = data.data.info;
@@ -212,6 +233,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 }                
                 polyline.on('click', function (e) {
                     var layer = e.target;
+                    $scope.state = 'drawmap';
                     if($scope.currentLayer)
                         $scope.currentLayer.editing.disable();
 
@@ -226,7 +248,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     $scope.currentArea = null;
                 });   
             });
-            updateMarker();
+            updateMarker();       
         })
         .error(function (data) {
             $log.log('Error: ' + data);
@@ -265,6 +287,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                       
             layer.on('click', function (e) {
                 var layer = e.target;
+                $scope.state = 'drawmap';
                 if($scope.currentLayer)
                     $scope.currentLayer.editing.disable();
 
@@ -347,13 +370,10 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     focus: false,
                     title: "Marker",
                     draggable: false,
-                    icon: (marker_point.station_type==="rail")?stationIcon:boatIcon,
-                    label: {
-                        message: marker_point.name,
-                        options: {
-                            noHide: true
-                        }
-                    }                       
+                    icon: (marker_point.station_type==="rail")?stationIcon:(marker_point.station_type==="brt")?brtIcon:boatIcon                   
+                }
+                if(marker_point.name){
+                    markers[marker_point.layer_id + '_' + m].label = {message: marker_point.name,options: {noHide: true}};   
                 }
             }
         }
@@ -574,7 +594,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     
     $scope.saveNetwork = function(){       
-        $scope.save_edit_status = 'Saving <i class="fa fa-cog fa-spin"></i>';
+        $scope.save_edit_status = $sce.trustAsHtml('Saving <i class="fa fa-cog fa-spin"></i>');
         $http.post('/api' + url, {
             'map':{
                 'center': $scope.map.center,
@@ -585,7 +605,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         })
         .success(function (data) {
             $log.log(data);
-            $scope.save_edit_status = "Save Done"
+            $scope.save_edit_status = "Save Done";
+            $timeout(function(){$scope.save_edit_status = ""}, 1000);
         })
         .error(function (data) {
             $log.log('Error: ' + data);

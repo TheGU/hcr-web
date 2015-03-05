@@ -56,3 +56,14 @@ body {
   margin-top: 60px;
   border-top: 1px solid #eee;
 }
+
+.leaflet-div-icon {
+    background: #fff;
+    border: 1px solid #666;
+    border-radius: 50%; 
+    font-size: 12px; line-height: 1.5em;
+}
+
+.leaflet-div-icon i {
+    margin-left: 2px;
+}

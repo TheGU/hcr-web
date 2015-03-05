@@ -51,7 +51,7 @@
     <div class="container">
         <div class="row">
             <div class="pull-right save-load-control"> 
-                {{ save_edit_status }}
+                <span ng-bind-html="save_edit_status"></span>
                 <button class="btn btn-info" ng-click="saveNetwork()" ng-if="network_modify">Save Edit</button>
                 <button class="btn btn-warning" ng-click="saveNewNetwork()">Save as New</button>
             </div>            
@@ -79,7 +79,7 @@
                                 ng-model="info.start_city" ng-blur="mapGeocodeFocus()">
                           
                       </div>
-                      <div class="col-sm-3">
+                      <div class="col-sm-6">
                           <p class="form-control-static">{{ info.start_city_data.formatted_address }}</p>
                       </div>                     
                   </div>
@@ -163,26 +163,42 @@
             </div>            
             
             <div ng-if="editPath">
-                Path : {{ currentPath.name || currentPath.id }}
                 <h3>
                     Path : 
                     <span style="color:{{ currentPath.options.color }};">{{ currentPath.name || currentPath.id }}</span>
                 </h3>
                 <div class="row form-group">                   
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                       <div class="form-group">
                         <label for="input-name">Name</label>
                         <input type="text" class="form-control" id="input-name" placeholder="Name" ng-model="currentPath.name">
                       </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                       <div class="form-group">
                         <label for="input-color">Color</label>
                         <i style="background:{{ currentPath.options.color }};width:18px;heigth:18px;float:right;"></i>
                         <input colorpicker type="text" class="form-control" id="input-color" placeholder="Color" ng-model="currentPath.options.color">
                       </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
+                      <div class="form-group">
+                        <label for="input-id">Type</label>
+                        <p class="form-control-static">
+                            <label class="radio-inline">
+                              <input type="radio" name="roadType" id="roadTypeRail" value="rail"  ng-model="currentPath.station_type"> <i class="fa fa-train"></i> Rail
+                            </label>
+                            <label class="radio-inline">
+                                
+                              <input type="radio" name="roadType" id="roadTypeCanal" value="canal"  ng-model="currentPath.station_type"> <i class="fa fa-ship"></i> Canal
+                            </label>
+                            <label class="radio-inline">
+                              <input type="radio" name="roadType" id="roadTypeBrt" value="brt"  ng-model="currentPath.station_type"> <i class="fa fa-bus"></i> BRT
+                            </label>                            
+                        </p>
+                      </div>
+                    </div>                     
+                    <div class="col-sm-3">
                       <div class="form-group">
                         <label for="input-id">Control</label>
                         <p class="form-control-static">
@@ -192,19 +208,7 @@
                         </p>
                       </div>
                     </div>    
-                    <div class="col-sm-4">
-                      <div class="form-group">
-                        <label for="input-id">Type</label>
-                        <p class="form-control-static">
-                            <label class="radio-inline">
-                              <input type="radio" name="roadType" id="roadTypeRail" value="rail"  ng-model="currentPath.station_type"> Rail
-                            </label>
-                            <label class="radio-inline">
-                              <input type="radio" name="roadType" id="roadTypeCanal" value="canal"  ng-model="currentPath.station_type"> Canal
-                            </label>
-                        </p>
-                      </div>
-                    </div>                       
+                      
                 </div> 
                 
                 <table class="table table-striped table-hover">
@@ -302,6 +306,7 @@
     <script src="/js/vendor/bootstrap-without-jquery.min.js"></script>
     <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
     <script src="/js/vendor/angular.min.js"></script>
+    <script src="/js/vendor/angular-sanitize.min.js"></script>
     <script src="/js/vendor/leaflet.js"></script>
     <script src="/js/vendor/leaflet.draw.js"></script> 
     <script src="/js/vendor/leaflet.label.js"></script> 

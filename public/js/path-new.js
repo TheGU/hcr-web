@@ -4,14 +4,23 @@ myApp.config(function (localStorageServiceProvider) {
         .setPrefix('hcr-map-path')
         .setNotify(true, true);
 });
-myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, $window, $timeout, leafletData, leafletBoundsHelpers, localStorageService) {
+myApp.config(function($locationProvider) {
+    $locationProvider.html5Mode(true);
+});
+myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $http, $location, $window, $timeout, leafletData, leafletBoundsHelpers, localStorageService) {
     angular.extend($scope, {
+        info: {
+            simulator_name: '',
+            start_city:'',
+            start_city_data: {},
+            gen_trips_number: 1000,
+            brt_adv_factor: 3,
+            rail_adv_factor: 3,
+            canal_adv_factor: 3,
+            max_walk_distance: 0            
+        },
         map: {
-            center: {
-                //lat: 13.751390740782975,
-                //lng: 100.62652587890625,
-                //zoom: 11
-            },
+            center: {},
             bounds: {"northEast":{"lat":13.838079936422476,"lng":100.74840545654295},"southWest":{"lat":13.63797952487553,"lng":100.34671783447266}},
             controls: {
                 draw: {
@@ -94,7 +103,9 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             }
         }
     });
-
+    //$scope.editableFeatureGroup = new L.FeatureGroup();
+    //$scope.map.controls.draw.edit = {featureGroup: $scope.editableFeatureGroup};
+    
     var stationIcon = {
         iconUrl: 'images/stationIcon18.png',
         iconRetinaUrl: 'images/stationIcon18.png',
@@ -118,12 +129,19 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
 
 
     // init ===============================================    
+    // Check url if it need to load data
+    var drawnItems = null;
+    leafletData.getMap().then(function (map) {
+        drawnItems = $scope.map.controls.edit.featureGroup;
+    });
+
+    
+    // internal value
     $scope.state = "setbasic";
     $scope.path = {};
     $scope.area = {};
     $scope.stationMarker = [];
-    $scope.start_city = '';
-    $scope.start_city_data = {};
+
     
     $scope.currentLayer = null;
     $scope.editPath = false;
@@ -155,11 +173,11 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     
     $scope.mapGeocodeFocus = function(){
         //https://maps.googleapis.com/maps/api/geocode/json?address=bangkok,+thailand
-        var city = $scope.start_city;
+        var city = $scope.info.start_city;
         if(city){
             $http.get('http://maps.googleapis.com/maps/api/geocode/json?address=' + city + '&sensor=true').success(function (data) {
                 //$log.log(data);
-                $scope.start_city_data = data.results[0];
+                $scope.info.start_city_data = data.results[0];
                 mapBestFit(data.results[0].geometry.viewport.northeast,data.results[0].geometry.viewport.southwest);
             })
             .error(function (data) {
@@ -168,13 +186,61 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         }
     };
 
-    var drawnItems = null;
+    var url = $location.path();
+    if(url.length > 5){
+        // load with path id
+        $http.get('/api' + url).success(function (data) {
+            var log;
+            //$log.log(data);
+            $scope.map.bounds = data.data.map.bounds;
+            $scope.map.center = data.data.map.center;
+            $scope.info = data.data.info;
+            angular.forEach(data.data.path, function(value, key) {
+                var polyline = L.polyline(value._latlngs, value.options);
+                drawnItems.addLayer(polyline);
+                var id = 'p' + polyline._leaflet_id;
+                $scope.path[id] = {
+                    id: polyline._leaflet_id,
+                    type: value.type,
+                    name: value.name,
+                    station_type: value.station_type,
+                    options: polyline.options,
+                    _latlngs: polyline._latlngs
+                };          
+                for(var i in $scope.path[id]._latlngs){
+                    $scope.path[id]._latlngs[i].station = value._latlngs[i].station;
+                    $scope.path[id]._latlngs[i].name = value._latlngs[i].name;
+                }                
+                polyline.on('click', function (e) {
+                    var layer = e.target;
+                    if($scope.currentLayer)
+                        $scope.currentLayer.editing.disable();
+
+                    $scope.map.markers = {};
+
+                    $scope.currentLayer = layer;
+                    layer.editing.enable();     
+
+                    $scope.editPath = true;
+                    $scope.editArea = false;
+                    $scope.currentPath = $scope.path['p'+layer._leaflet_id];
+                    $scope.currentArea = null;
+                });   
+            });
+            updateMarker();
+        })
+        .error(function (data) {
+            $log.log('Error: ' + data);
+        });                  
+    }    
+    
     leafletData.getMap().then(function (map) {
-        drawnItems = $scope.map.controls.edit.featureGroup;
+        //drawnItems = $scope.map.controls.edit.featureGroup;
         map.on('draw:created', function (e) {
             var type = e.layerType,
                 layer = e.layer;
             drawnItems.addLayer(layer);
+            
             
             if (type === 'polyline') {
                 var id = 'p' + layer._leaflet_id;
@@ -202,12 +268,12 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                 var layer = e.target;
                 if($scope.currentLayer)
                     $scope.currentLayer.editing.disable();
-                
+
                 $scope.map.markers = {};
 
                 $scope.currentLayer = layer;
                 layer.editing.enable();     
-                
+
                 if (type === 'polyline') {
                     $scope.editPath = true;
                     $scope.editArea = false;
@@ -219,7 +285,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
                     $scope.currentPath = null;
                     $scope.currentArea = $scope.area['a'+layer._leaflet_id];
                 }                
-            });             
+            });    
                         
             //createStationMarker(layer);
             updateMarker();
@@ -309,33 +375,9 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     // Generate Part =====================================
     $scope.gen_status = "";
     $scope.trips = [];
-    $scope.gen_trips_number = 1000;
-    
     $scope.network = {};
-    $scope.brt_adv_factor = 3;
-    $scope.rail_adv_factor = 3;
-    $scope.canal_adv_factor = 3;
-    $scope.max_walk_distance = 0;
-
     $scope.tripResult = [];
     $scope.tripStats = {};  
-
-    var change_state = function(state){
-        /*
-        if(state === "drawmap"){
-            state = "gentrip";
-        }else if(state === "gentrip"){
-            state = "gennetwork";
-        }else if(state === "gennetwork"){
-            state = "genresult";
-        }else if(state === "genresult"){
-            state = "done";
-        }else{
-            state = "drawmap";
-        }
-        */
-        $scope.state = state;
-    };  
     
     $scope.editBasicInfo = function () {
         $scope.state = 'setbasic';
@@ -345,7 +387,8 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     $scope.startCreatePath = function(){
         $scope.state = 'drawmap';
         mapChangeSize('600px');
-        mapBestFit($scope.start_city_data.geometry.viewport.northeast, $scope.start_city_data.geometry.viewport.southwest);
+        if($scope.info.start_city_data)
+            mapBestFit($scope.info.start_city_data.geometry.viewport.northeast, $scope.info.start_city_data.geometry.viewport.southwest);
     };
     
     $scope.startSimulate = function(){
@@ -371,7 +414,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     var genTrips = function(){
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
-        var trips_number = $scope.gen_trips_number;
+        var trips_number = $scope.info.gen_trips_number;
 
         $scope.gen_status = "Create trips data ...";
         
@@ -393,10 +436,10 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
         
         var network = new GenNetwork(
             $scope.path,
-            $scope.canal_adv_factor,
-            $scope.rail_adv_factor,
-            $scope.brt_adv_factor,            
-            $scope.max_walk_distance
+            $scope.info.canal_adv_factor,
+            $scope.info.rail_adv_factor,
+            $scope.info.brt_adv_factor,            
+            $scope.info.max_walk_distance
         );    
         $scope.network = network;
         
@@ -410,7 +453,7 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
     var genTripResult = function(){  
         var trips = $scope.trips;
         var network = $scope.network;
-        var max_walk_distance = $scope.max_walk_distance;
+        var max_walk_distance = $scope.info.max_walk_distance;
         var tripResult = [];    
         
         $scope.gen_status = "Calculate best travel option for each trip ...";
@@ -526,7 +569,25 @@ myApp.controller('MapController', function ($scope, $filter, $log, $timeout, $ht
             });  
         };
         drawMap(switch_trips);        
-        change_state('done');
+        $scope.state = 'done';
         $scope.gen_status = "Done";
-    }
+    };
+    
+    $scope.saveNetwork = function(){       
+        
+        $http.post('/api/path/', {
+            'map':{
+                'center': $scope.map.center,
+                'bounds': $scope.map.bounds,
+            },
+            'path':$scope.path,
+            'info':$scope.info
+        })
+        .success(function (data) {
+            $log.log(data);
+        })
+        .error(function (data) {
+            $log.log('Error: ' + data);
+        });        
+    };
 });

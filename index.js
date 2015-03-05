@@ -15,6 +15,8 @@ mongoose.connect(dbUri); // connect to mongoDB database
 
 // Model =================
 var Poll = mongoose.model('Poll', sc.PollSchema);
+var Seqs = mongoose.model('Seqs', sc.SeqsSchema);
+var Path = mongoose.model('Path', sc.PathSchema);
 
 app.use(express.static(__dirname + '/public')); // set the static files location /public
 app.use(bodyParser.urlencoded({'extended': 'true'})); // parse application/x-www-form-urlencoded
@@ -35,6 +37,9 @@ app.get('/path', function (req, res) {
     res.sendFile(__dirname + '/public/path-new.html');
 });
 
+app.get('/path/:pathId', function (req, res) {
+    res.sendFile(__dirname + '/public/path-new.html');
+});
 
 app.get('/poll', function (req, res) {
     res.sendFile(__dirname + '/public/poll-new.html');
@@ -57,6 +62,50 @@ app.post('/api/poll', function (req, res) {
         if (err)
             res.send(err);
         res.json(poll);
+    });
+});
+
+var shortener = function(seq) {
+    //https://github.com/juanmaia
+    var chars = "abcdefghijklmnopqrstuvxzwyABCDEFGHIJKLMNOPQRSTUVXZWY1234567890";
+    while (seq > 0) {
+        var k = seq % chars.length;
+        if (k == 0) {
+            k = 62;
+            seq--;
+        }
+        seq = Math.floor(seq / chars.length);
+        str = chars[k - 1];
+    }
+    return str;
+};
+app.get('/api/path/:pathId', function (req, res) {
+    Path.findOne({
+        "pathId": req.params.pathId
+    }, function (err, data) {
+        if (err)
+            res.send(err);
+        res.json(data);
+    });
+});
+app.post('/api/path', function (req, res) {
+    Seqs.increment('pathId', function (err, data) {
+        if(err){
+            console.log('err', err);
+            return;
+        }
+        
+        pathId = shortener(data.seq);
+
+        var data = {
+            "pathId": pathId,
+            "data": req.body
+        };
+        Path.create(data, function (err, path) {
+            if (err)
+                res.send(err);
+            res.json(path);
+        });
     });
 });
 

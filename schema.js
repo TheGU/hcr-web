@@ -1,5 +1,33 @@
 var mongoose = require('mongoose');
 
+
+
+//Document Models
+var PathSchema = new mongoose.Schema({
+  pathId: { type: String, index: true },
+  data: mongoose.Schema.Types.Mixed,
+  created_at: { type: Date},
+  updated_at: { type: Date}
+});
+PathSchema.pre('save', function(next){
+  now = new Date();
+  this.updated_at = now;
+  if ( !this.created_at ) {
+    this.created_at = now;
+  }
+  next();
+});
+module.exports.PathSchema = PathSchema;
+
+var SeqsSchema = new mongoose.Schema({
+  _id       :  { type: String}
+  , seq       :  { type: Number}
+});
+SeqsSchema.statics.increment = function (counter, callback) {
+  return this.findOneAndUpdate({ _id: counter }, { $inc: { seq: 1 } }, {upsert: true,new: true}, callback);
+};
+module.exports.SeqsSchema = SeqsSchema;
+
 var PollSchema = new mongoose.Schema({
         poll_user : { type: String, default: '' },
         poll_date : { type: Date, default: Date.now },

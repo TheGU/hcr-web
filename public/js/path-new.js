@@ -9,7 +9,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         info: {
             simulator_name: '',
             start_city:'',
-            start_city_data: {},
+            start_city_data: null,
             gen_trips_number: 1000,
             brt_adv_factor: 3,
             rail_adv_factor: 3,
@@ -29,34 +29,6 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                             opacity: 0.8,
                         }
                     },
-                    /*
-                    polygon: {
-                        allowIntersection: false, // Restricts shapes to simple polygons
-                        drawError: {
-                            color: '#e1e100', // Color the shape will turn when intersects
-                            message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
-                        },
-                        shapeOptions: {
-                            color: '#333',
-                            weight: 3,
-                            opacity: 0.8,
-                        }
-                    },
-                    circle: {
-                        shapeOptions: {
-                            color: '#333',
-                            weight: 3,
-                            opacity: 0.8,
-                        }
-                    },
-                    rectangle: {
-                        shapeOptions: {
-                            color: '#333',
-                            weight: 3,
-                            opacity: 0.8,
-                        }
-                    },
-                    */
                     polygon: false,
                     circle: false,
                     rectangle: false
@@ -103,28 +75,6 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
     //$scope.editableFeatureGroup = new L.FeatureGroup();
     //$scope.map.controls.draw.edit = {featureGroup: $scope.editableFeatureGroup};
     
-    /*
-    var stationIcon = {
-        iconUrl: '/images/stationIcon18.png',
-        iconRetinaUrl: '/images/stationIcon18.png',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9],
-        popupAnchor: [9, 0],
-        labelAnchor: [9, 0],
-        shadowUrl: '',
-        shadowRetinaUrl: ''
-    };    
-    var boatIcon = {
-        iconUrl: '/images/boatIcon18.png',
-        iconRetinaUrl: '/images/boatIcon18.png',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9],
-        popupAnchor: [9, 0],
-        labelAnchor: [9, 0],
-        shadowUrl: '',
-        shadowRetinaUrl: ''
-    };        
-    */
     var stationIcon = {
             type: 'div',
             iconSize: [20, 20],
@@ -195,8 +145,10 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         if(city){
             $http.get('http://maps.googleapis.com/maps/api/geocode/json?address=' + city + '&sensor=true').success(function (data) {
                 //$log.log(data);
-                $scope.info.start_city_data = data.results[0];
-                mapBestFit(data.results[0].geometry.viewport.northeast,data.results[0].geometry.viewport.southwest);
+                if(data.results[0]){
+                    $scope.info.start_city_data = data.results[0];
+                    mapBestFit(data.results[0].geometry.viewport.northeast,data.results[0].geometry.viewport.southwest);
+                }
             })
             .error(function (data) {
                 $log.log('Error: ' + data);
@@ -320,6 +272,18 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         });
         map.on('draw:editstart', function (e) {
             $scope.map.markers = {};
+        });  
+        
+        map.on('draw:deleted', function (e) {     
+            angular.forEach(e.layers._layers, function(value, key){
+                 delete $scope.path['p'+key];   
+            });
+            $scope.currentLayer.editing.disable();
+            $scope.editPath = false;
+            $scope.editArea = false;
+            $scope.currentPath = null;
+            $scope.currentArea = null;
+            updateMarker();               
         });        
     });
     
@@ -417,7 +381,8 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         $scope.editPath = false;
         $scope.editArea = false;
         $scope.currentPath = null;
-        $scope.currentArea = null;          
+        $scope.currentArea = null;     
+        $scope.network = {};
         
         leafletData.getMap().then(function(map) {
             map.touchZoom.disable();
@@ -427,28 +392,9 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         
         $scope.gen_status = "Checking data ...";   
         
-        $timeout(genTrips, 1000);
+        $timeout(genNetwork, 1000);
     };
     
-    var genTrips = function(){
-        var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
-        var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
-        var trips_number = $scope.info.gen_trips_number;
-
-        $scope.gen_status = "Create trips data ...";
-        
-        $scope.trips = new GenTrips(topleft, bottomright).gen_uniform(trips_number);
-        
-        leafletData.getLayers().then(function (layers) {
-            layers.overlays.trips_layer.clearLayers();
-            for(var t = 0; t< $scope.trips.length; t++){
-                var polyline = L.polyline($scope.trips[t], {weight: 1, color: 'red', clickable: false}).addTo(layers.overlays.trips_layer);   
-            }
-            layers.overlays.trips_layer.eachLayer(function(layer){layer.bringToBack();});
-        });
-        
-        $timeout(genNetwork, 3000);
-    };
     
     var genNetwork = function(){
         $scope.gen_status = "Create networks data ...";
@@ -465,74 +411,21 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         $scope.map.controls.edit.featureGroup.bringToFront();
         updateMarker();
         
-        $timeout(genTripResult, 1000);
+        $timeout(genTrips, 1000);
     };    
         
-
-    var genTripResult = function(){  
-        var trips = $scope.trips;
-        var network = $scope.network;
-        var max_walk_distance = $scope.info.max_walk_distance;
-        var tripResult = [];    
+    var genTrips = function(){
+        var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
+        var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
+        var trips_number = $scope.info.gen_trips_number;
+        var max_walk_distance = $scope.info.max_walk_distance;  
         
-        $scope.gen_status = "Calculate best travel option for each trip ...";
-
         var dist_bound = MAX_DISTANCE;        
         if(max_walk_distance>0)
             dist_bound = max_walk_distance * DIST_SCALE;
-
-        var network_distance = function(sx,sy,tx,ty,dbound){
-            var dstart = {};
-            var dterm = {};
-            for(var i in network){
-                if(network[i].station){
-                    dstart[i] = distance(sx,sy,network[i].lat,network[i].lng);
-                    dterm[i] = distance(network[i].lat,network[i].lng,tx,ty);
-                    if(dstart[i] > dbound)
-                        dstart[i] = INFTY + 1;
-                    if(dterm[i] > dbound)
-                        dterm[i] = INFTY + 1;
-                }else{
-                    dstart[i] = INFTY + 1;
-                    dterm[i] = INFTY + 1;
-                }
-            }
-
-            var mind = INFTY;
-            for(var i in network){
-                if(!network[i].station)continue;
-
-                var d1 = dstart[i];
-                if(d1 > mind) continue;
-
-                for(var j in network){
-                    if((j===i)||(!network[j].station))continue;
-
-                    var dd = (d1 + ((j in network[i].connected)?network[i].connected[j]:INFTY+1));
-                    if(dd > mind) continue;
-
-                    dd = dd + dterm[j];
-                    if(dd < mind){
-                        mind = dd;   
-                    }
-                }
-            }
-            return mind;
-        };
-
-        for(var t = 0; t<trips.length; t++){
-            //var polyline = L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}).addTo(map);   
-            var sx = trips[t][0][0],
-                sy = trips[t][0][1],
-                tx = trips[t][1][0],
-                ty = trips[t][1][1];
-            var direct_distance = distance(sx,sy,tx,ty);
-            var net_distance = network_distance(sx,sy,tx,ty,dist_bound);
-            tripResult.push([direct_distance,net_distance]);
-        }            
         
-        // Gen Result And Draw map
-        var total_trips = trips.length;
+        var network = $scope.network;
+        var total_trips = trips_number;
         var total_org_distance = 0;
         var total_org_switch_distance = 0;
         var total_new_switch_distance = 0;
@@ -540,56 +433,84 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
 
         var switch_trips = [];
         var remain_trips = [];
-        for(var t = 0; t<trips.length; t++){
-            var direct_distance = tripResult[t][0];
-            var rail_distance = tripResult[t][1];
-            var is_using = false;
-            var travel_distance;
+        
+        $scope.gen_status = "Create trips data & Calculate best travel option for each trip ...";
+        
+        //$scope.trips = new GenTrips(topleft, bottomright).gen_uniform(trips_number);
+        
+        leafletData.getLayers().then(function (layers) {
+            layers.overlays.trips_layer.clearLayers();
 
-            total_org_distance += direct_distance;
-            if( rail_distance*1.2 < direct_distance){
-                is_using = true;
-                switched_trips += 1;
-                travel_distance = rail_distance;
-                total_org_switch_distance += direct_distance;
-                total_new_switch_distance += rail_distance;
+            for(var t = 0; t<trips_number; t++){
+                //var polyline = L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}).addTo(map);   
                 
-                switch_trips.push(L.polyline(trips[t], {weight: 1, color: 'blue', clickable: false}));
+                var trip = new GenTrips(topleft, bottomright).gen_single_uniform();
+                //var trip = [[13.72334441560363,100.50557294712797],[13.66679171399049,100.60976122866941]];
+                var polyline = L.polyline(trip, {weight: 1, opacity: 0.6, color: 'blue', clickable: false}).addTo(layers.overlays.trips_layer);                   
                 
-            }else{
-                is_using = false;
-                color = 'red';
-                travel_distance = direct_distance;
+                var sx = trip[0][0],
+                    sy = trip[0][1],
+                    tx = trip[1][0],
+                    ty = trip[1][1];
                 
-                remain_trips.push(L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}));
-            }
-        }   
-        
-        $scope.tripStats = {
-            switched_trips: switched_trips,
-            total_trips: total_trips,
-            org_avg_dist: (total_org_distance * DIST_RATIO)/total_trips,
-            switch: (switched_trips*100)/total_trips,
-            switch_stat_before: (switched_trips > 0)?(total_org_switch_distance*DIST_RATIO)/switched_trips:0,
-            switch_stat_after: (switched_trips > 0)?(total_new_switch_distance*DIST_RATIO)/switched_trips:0,
-            switch_stat_after_pc: (switched_trips > 0)?100 - total_new_switch_distance*100/total_org_switch_distance:0
-        };     
-        
-        var drawMap = function(trips_data){
-            leafletData.getLayers().then(function (layers) {
-                layers.overlays.trips_layer.clearLayers();
-                for(var i in trips_data){
-                    switch_trips[i].addTo(layers.overlays.switch_layer);
+                var direct_distance = distance(sx,sy,tx,ty);
+                var net_distance = NetworkDistance(sx,sy,tx,ty,dist_bound,network);
+                var is_using = false;
+
+                if(net_distance['best_distance'] < INFTY){
+                    var polyline_best_enter = L.polyline([[sx,sy],net_distance['best_enter']], {weight: 3, opacity: 1, color: 'yellow', clickable: false}).addTo(layers.overlays.trips_layer);    
+                    var polyline_best_exit = L.polyline([[tx,ty],net_distance['best_exit']], {weight: 3, opacity: 1, color: 'yellow', clickable: false}).addTo(layers.overlays.trips_layer);    
                 }
                 
-                for(var i in remain_trips){
-                    remain_trips[i].addTo(layers.overlays.trips_layer);
-                } 
-            });  
-        };
-        drawMap(switch_trips);        
-        $scope.state = 'done';
-        $scope.gen_status = "Done";
+                total_org_distance += direct_distance;
+                if( net_distance['best_distance']*1.2 < direct_distance){
+                    is_using = true;
+                    switched_trips += 1;
+                    total_org_switch_distance += direct_distance;
+                    total_new_switch_distance += net_distance['best_distance'];
+
+                    switch_trips.push(polyline.setStyle({color: 'green'}));
+
+                }else{
+                    is_using = false;
+                    remain_trips.push(polyline.setStyle({color: 'red'}));
+                }
+                
+                layers.overlays.trips_layer.removeLayer(polyline);
+                if(net_distance['best_distance'] < INFTY){
+                    layers.overlays.trips_layer.removeLayer(polyline_best_enter);
+                    layers.overlays.trips_layer.removeLayer(polyline_best_exit);
+                }
+                
+            }      
+            
+            
+            $scope.tripStats = {
+                switched_trips: switched_trips,
+                total_trips: total_trips,
+                org_avg_dist: (total_org_distance * DIST_RATIO)/total_trips,
+                switch: (switched_trips*100)/total_trips,
+                switch_stat_before: (switched_trips > 0)?(total_org_switch_distance*DIST_RATIO)/switched_trips:0,
+                switch_stat_after: (switched_trips > 0)?(total_new_switch_distance*DIST_RATIO)/switched_trips:0,
+                switch_stat_after_pc: (switched_trips > 0)?100 - total_new_switch_distance*100/total_org_switch_distance:0
+            };     
+
+            var drawMap = function(trips_data){
+                leafletData.getLayers().then(function (layers) {
+                    layers.overlays.trips_layer.clearLayers();
+                    for(var i in trips_data){
+                        switch_trips[i].addTo(layers.overlays.switch_layer);
+                    }
+
+                    for(var i in remain_trips){
+                        remain_trips[i].addTo(layers.overlays.trips_layer);
+                    } 
+                });  
+            };
+            drawMap(switch_trips);        
+            $scope.state = 'done';
+            $scope.gen_status = "Done";            
+        });
     };
     
     

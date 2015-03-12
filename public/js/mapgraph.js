@@ -1,11 +1,11 @@
 // Magic. Do not change.
 var DIST_SCALE = 0.009041543572655762;   
-var DIST_RATIO = 2./0.140961;
+var DIST_RATIO = 2.0/0.140961;
 var INFTY = 10000;
 var MAX_DISTANCE = 10000;
 
 var distance = function(x1, y1, x2, y2){
-    return(Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
+    return(1.0*Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
 };
 
 var GenTrips = function(topleft,bottomright){
@@ -23,6 +23,12 @@ var GenTrips = function(topleft,bottomright){
         }
         return trips
     }
+    
+    this.gen_single_uniform = function(){
+        var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
+        var maxw = MAP_FRAME['bottomright'][1] - MAP_FRAME['topleft'][1];
+        return [[MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw],[MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw]];
+    }    
     
     return this;
 }
@@ -123,7 +129,7 @@ var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,
     return network;
 };
 
-var GenTripStat = function(trips,network,max_walk_distance, callback){
+var GenTripStat = function(trips,network,max_walk_distance){
     var tripResult = [];
 
     var dist_bound = MAX_DISTANCE;        
@@ -133,6 +139,7 @@ var GenTripStat = function(trips,network,max_walk_distance, callback){
     var network_distance = function(sx,sy,tx,ty,dbound){
         var dstart = {};
         var dterm = {};
+
         for(var i in network){
             if(network[i].station){
                 dstart[i] = distance(sx,sy,network[i].lat,network[i].lng);
@@ -180,6 +187,53 @@ var GenTripStat = function(trips,network,max_walk_distance, callback){
         tripResult.push([direct_distance,net_distance]);
     }         
     
-    if(callback)callback('done');
     return tripResult;
+};
+
+var NetworkDistance = function(sx,sy,tx,ty,dbound,network){
+    var dstart = {};
+    var dterm = {};
+    var best_enter;
+    var best_exit;
+    
+    for(var i in network){
+        if(network[i].station){
+            dstart[i] = distance(sx,sy,network[i].lat,network[i].lng);
+            dterm[i] = distance(network[i].lat,network[i].lng,tx,ty);
+            if(dstart[i] > dbound)
+                dstart[i] = INFTY + 1;
+            if(dterm[i] > dbound)
+                dterm[i] = INFTY + 1;
+        }else{
+            dstart[i] = INFTY + 1;
+            dterm[i] = INFTY + 1;
+        }
+    }
+
+    var mind = INFTY;
+    for(var i in network){
+        if(!network[i].station)continue;
+
+        var d1 = dstart[i];
+        if(d1 > mind) continue;
+
+        for(var j in network){
+            if((j===i)||(!network[j].station))continue;
+
+            var dd = (d1 + ((j in network[i].connected)?network[i].connected[j]:INFTY+1));
+            if(dd > mind) continue;
+
+            dd = dd + dterm[j];
+            if(dd < mind){
+                mind = dd;   
+                best_enter = network[i];
+                best_exit = network[j];                
+            }
+        }
+    }
+    return {
+        best_distance: mind,
+        best_enter: best_enter,
+        best_exit: best_exit
+    };
 };

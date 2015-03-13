@@ -139,12 +139,12 @@
         <div class="row" ng-cloak class="ng-cloak">
             <div ng-if="state==='done'">
                 Trip Stats <br />
-                total_trips: {{ tripStats.total_trips }}<br />
-                original avarage distance: {{ tripStats.org_avg_dist }}<br />
-                % switch: {{ tripStats.switch }}<br />
+                total_trips: {{ tripStats.total_trips | number }}<br />
+                original avarage distance: {{ tripStats.org_avg_dist | number:2 }}<br />
+                % switch: {{ tripStats.switch | number:2 }}<br />
                 <span ng-if="tripStats.switched_trips>0">
-                [switch-only-stat] avarage distance before switch: {{ tripStats.switch_stat_before }}<br />
-                [switch-only-stat] avarage distance after switch: {{ tripStats.switch_stat_after }} ({{ tripStats.switch_stat_after_pc }}% faster)<br />
+                [switch-only-stat] avarage distance before switch: {{ tripStats.switch_stat_before | number:2 }}<br />
+                [switch-only-stat] avarage distance after switch: {{ tripStats.switch_stat_after | number:2 }} ({{ tripStats.switch_stat_after_pc | number:2 }}% faster)<br />
                 </span>
             </div>            
             
@@ -285,7 +285,18 @@
           Jittat Fakcharoenphol, Pattapong Jantarach. 
       </div>
     </footer>
-    
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-60702582-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+
     <script src="/js/vendor/bootstrap-without-jquery.min.js"></script>
     <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
     <script src="/js/vendor/angular.min.js"></script>
@@ -300,6 +311,8 @@
     
     <script src="/js/mapgraph.js"></script>    
     <script src="/js/path-new.js"></script>
+
+
 </body>
 
 </html>

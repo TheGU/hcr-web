@@ -104,7 +104,7 @@ var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,
             }
         }
     }
-
+    
     // asap
     // !!!! it not array, not sure this will create bug or not !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     for(var k in network){

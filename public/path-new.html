@@ -290,10 +290,26 @@
         </div>             
     </div>
 
+    
+  
+    <modal-dialog show='modalShown' width='1240px' height='530px' ng-cloak>
+        <img src="/images/tutorial1.jpg" />
+    </modal-dialog>  
+    
     <footer class="footer">
       <div class="container">
           <img src="/images/cc_by.png" height="30px"></img>  
-          Jittat Fakcharoenphol, Pattapong Jantarach. 
+          Jittat Fakcharoenphol, Pattapong Jantarach, Yanyong Boon-Long
+        
+            <div class="pull-right">            
+                <a class="btn btn-default"  ng-click='toggleModal()'>
+                    <i class="fa fa-question-circle fa-fw"></i> Tutorial 
+                </a>
+                <a class="btn btn-default" href="/about">
+                    <i class="fa fa-users fa-fw"></i> About Us
+                </a>
+            </div>
+                
       </div>
     </footer>
 

@@ -49,11 +49,17 @@
     
     <div class="container">
         <div class="row">
-            <div class="pull-right save-load-control"> 
+            <a class="btn btn-default"  ng-click='toggleModal()'>
+                <i class="fa fa-question-circle fa-fw"></i> Tutorial 
+            </a>     
+            <div class="pull-right"> 
                 <span ng-bind-html="save_edit_status"></span>
                 <button class="btn btn-info" ng-click="saveNetwork()" ng-if="network_modify">Save Edit</button>
                 <button class="btn btn-warning" ng-click="saveNewNetwork()">Save as New</button>
-            </div>            
+            </div>   
+        </div>
+        <div class="row">
+          
             <div ng-cloak class="ng-cloak" ng-show="state==='setbasic'">
 
                 <h3>Basic Information</h3>
@@ -302,9 +308,6 @@
           Jittat Fakcharoenphol, Pattapong Jantarach, Yanyong Boon-Long
         
             <div class="pull-right">            
-                <a class="btn btn-default"  ng-click='toggleModal()'>
-                    <i class="fa fa-question-circle fa-fw"></i> Tutorial 
-                </a>
                 <a class="btn btn-default" href="/about">
                     <i class="fa fa-users fa-fw"></i> About Us
                 </a>

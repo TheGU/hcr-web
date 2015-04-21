@@ -126,6 +126,9 @@ L.Google = L.Class.extend({
 			function() { _this._checkZoomLevels(); });
 		//Reporting that map-object was initialized.
 		this.fire('MapObjectInitialized', { mapObject: map });
+        
+        var transitLayer = new google.maps.TransitLayer();
+        transitLayer.setMap(map);          
 	},
 
 	_checkZoomLevels: function() {

@@ -13,7 +13,7 @@
     "mongoose": "^3.8.17"
   },
   "engines": {
-    "node": "0.10.x"
+    "node": "0.12.x"
   },
   "repository": {
     "type": "git",

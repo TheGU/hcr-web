@@ -58,7 +58,13 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                             opacity: 0.8,
                         }
                     },
-                    polygon: false,
+                    polygon: {
+                        shapeOptions: {
+                            color: '#aaa',
+                            weight: 2,
+                            opacity: 0.2,
+                        }
+                    },
                     circle: false,
                     rectangle: false
                 },
@@ -263,7 +269,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     type: type,
                     name: '',
                     options: layer.options
-                }; 
+                };
             }
                       
             layer.on('click', function (e) {

@@ -97,7 +97,8 @@ var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,
                 network[i].lng,
                 network[j].lat,
                 network[j].lng); 
-            if(dist < dbound){
+          
+            if((dbound == 0) || (dist < dbound)){
                 if((j in network[i].connected) && (dist > network[i].connected[j]))continue;
                 network[i].connected[j] = dist;
                 network[j].connected[i] = dist;               

@@ -202,6 +202,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         $scope.currentLayer = layer;
         layer.editing.enable();     
 
+        var type = layer.model.type;
         if (type === 'polyline') {
             $scope.editPath = true;
             $scope.editArea = false;
@@ -313,9 +314,13 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
             $scope.map.markers = {};
         });  
         
-        map.on('draw:deleted', function (e) {     
+        map.on('draw:deleted', function (e) {
             angular.forEach(e.layers._layers, function(value, key){
-                 delete $scope.path['p'+key];   
+                if(value.model.type == 'polyline') {
+                    delete $scope.path['p'+key];
+                } else {
+                    delete $scope.area['a'+key];
+                }
             });
             $scope.currentLayer.editing.disable();
             $scope.editPath = false;
@@ -598,8 +603,8 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
     
     
     // tutorial modal
-      $scope.modalShown = false;
-      $scope.toggleModal = function() {
-            $scope.modalShown = !$scope.modalShown;
-      };    
+    $scope.modalShown = false;
+    $scope.toggleModal = function() {
+        $scope.modalShown = !$scope.modalShown;
+    };    
 });

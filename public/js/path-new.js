@@ -191,6 +191,30 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         }
     };
 
+    var layerClickHandler = function(e) {
+        var layer = e.target;
+        $scope.state = 'drawmap';
+        if($scope.currentLayer) {
+            $scope.currentLayer.editing.disable();
+        }
+        $scope.map.markers = {};
+
+        $scope.currentLayer = layer;
+        layer.editing.enable();     
+
+        if (type === 'polyline') {
+            $scope.editPath = true;
+            $scope.editArea = false;
+            $scope.currentPath = $scope.path['p'+layer._leaflet_id];
+            $scope.currentArea = null;
+        } else {
+            $scope.editPath = false;
+            $scope.editArea = true;      
+            $scope.currentPath = null;
+            $scope.currentArea = $scope.area['a'+layer._leaflet_id];
+        }                
+    };
+    
     var url = $window.location.pathname;
     if(url.length > 5){
         // load with path id
@@ -217,23 +241,23 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                 for(var i in $scope.path[id]._latlngs){
                     $scope.path[id]._latlngs[i].station = value._latlngs[i].station;
                     $scope.path[id]._latlngs[i].name = value._latlngs[i].name;
-                }                
-                polyline.on('click', function (e) {
-                    var layer = e.target;
-                    $scope.state = 'drawmap';
-                    if($scope.currentLayer)
-                        $scope.currentLayer.editing.disable();
-
-                    $scope.map.markers = {};
-
-                    $scope.currentLayer = layer;
-                    layer.editing.enable();     
-
-                    $scope.editPath = true;
-                    $scope.editArea = false;
-                    $scope.currentPath = $scope.path['p'+layer._leaflet_id];
-                    $scope.currentArea = null;
-                });   
+                }
+                polyline.model = $scope.path[id];
+                polyline.on('click', layerClickHandler);
+            });
+            angular.forEach(data.data.area, function(value, key) {
+                var polygon = L.polygon(value._latlngs, value.options);
+                drawnItems.addLayer(polygon);
+                var id = 'a' + polygon._leaflet_id;
+                $scope.area[id] = {
+                    id: polygon._leaflet_id,
+                    type: value.type,
+                    name: value.name,
+                    options: polygon.options,
+                    _latlngs: polygon._latlngs
+                };          
+                polygon.model = $scope.area[id];
+                polygon.on('click', layerClickHandler);
             });
             updateMarker();       
         })
@@ -249,7 +273,6 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                 layer = e.layer;
             drawnItems.addLayer(layer);
             
-            
             if (type === 'polyline') {
                 var id = 'p' + layer._leaflet_id;
                 $scope.path[id] = {
@@ -263,39 +286,20 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                 for(var i in $scope.path[id]._latlngs){
                     $scope.path[id]._latlngs[i].station = true;
                 }
+                layer.model = $scope.path[id];
             } else {
                 $scope.area['a' + layer._leaflet_id] = {
                     id: layer._leaflet_id,
                     type: type,
                     name: '',
-                    options: layer.options
+                    options: layer.options,
+                    _latlngs: layer._latlngs
                 };
+                layer.model = $scope.area[id];
             }
                       
-            layer.on('click', function (e) {
-                var layer = e.target;
-                $scope.state = 'drawmap';
-                if($scope.currentLayer)
-                    $scope.currentLayer.editing.disable();
+            layer.on('click', layerClickHandler);
 
-                $scope.map.markers = {};
-
-                $scope.currentLayer = layer;
-                layer.editing.enable();     
-
-                if (type === 'polyline') {
-                    $scope.editPath = true;
-                    $scope.editArea = false;
-                    $scope.currentPath = $scope.path['p'+layer._leaflet_id];
-                    $scope.currentArea = null;
-                } else {
-                    $scope.editPath = false;
-                    $scope.editArea = true;      
-                    $scope.currentPath = null;
-                    $scope.currentArea = $scope.area['a'+layer._leaflet_id];
-                }                
-            });    
-                        
             //createStationMarker(layer);
             updateMarker();
             //console.log(JSON.stringify(layer.toGeoJSON()));
@@ -347,17 +351,19 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         $scope.stationMarker = [];
         
         $scope.map.controls.edit.featureGroup.eachLayer(function(layer){
-            for(l in layer._latlngs){
-                var path_id = 'p' + layer._leaflet_id;
-                $scope.stationMarker.push({
-                    layer_id: path_id,
-                    lat: layer._latlngs[l].lat,
-                    lng: layer._latlngs[l].lng,
-                    station: layer._latlngs[l].station,
-                    station_type: $scope.path[path_id].station_type,
-                    name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',
-                });
-            }                
+            if(layer.model.type == 'polyline') {
+                for(l in layer._latlngs){
+                    var path_id = 'p' + layer._leaflet_id;
+                    $scope.stationMarker.push({
+                        layer_id: path_id,
+                        lat: layer._latlngs[l].lat,
+                        lng: layer._latlngs[l].lng,
+                        station: layer._latlngs[l].station,
+                        station_type: $scope.path[path_id].station_type,
+                        name: (layer._latlngs[l].name)?layer._latlngs[l].name:'',
+                    });
+                }
+            }
         });  
 
         for(m in $scope.stationMarker){
@@ -557,6 +563,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                 'bounds': $scope.map.bounds,
             },
             'path':$scope.path,
+            'area':$scope.area,
             'info':$scope.info
         })
         .success(function (data) {
@@ -576,6 +583,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                 'bounds': $scope.map.bounds,
             },
             'path':$scope.path,
+            'area':$scope.area,
             'info':$scope.info
         })
         .success(function (data) {

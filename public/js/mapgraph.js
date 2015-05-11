@@ -8,8 +8,75 @@ var distance = function(x1, y1, x2, y2){
     return(1.0*Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
 };
 
+var pointInPolygon = function(x,y,polyPoints){
+    if(polyPoints._minMaxCache == undefined) {
+        var minx = polyPoints._latlngs[0].lat;
+        var miny = polyPoints._latlngs[0].lng;
+        var maxx = minx;
+        var maxy = miny;
+        for(var i = 0; i< polyPoints._latlngs.length; i++) {
+            if(polyPoints._latlngs[i].lat < minx) {
+                minx = polyPoints._latlngs[i].lat;
+            }
+            if(polyPoints._latlngs[i].lat > maxx) {
+                maxx = polyPoints._latlngs[i].lat;
+            }
+            if(polyPoints._latlngs[i].lng < miny) {
+                miny = polyPoints._latlngs[i].lng;
+            }
+            if(polyPoints._latlngs[i].lng > maxy) {
+                maxy = polyPoints._latlngs[i].lng;
+            }
+        }
+        polyPoints._minMaxCache = [minx,miny,maxx,maxy];
+    } else {
+        var minx = polyPoints._minMaxCache[0];
+        var miny = polyPoints._minMaxCache[1];
+        var maxx = polyPoints._minMaxCache[2];
+        var maxy = polyPoints._minMaxCache[3];
+    }
+
+    return ((x >= minx) && (x <= maxx) &&
+            (y >= miny) && (y <= maxy));
+};
+
 var GenTrips = function(topleft,bottomright){
     var MAP_FRAME = {'topleft':topleft,'bottomright':bottomright};
+
+    var randomPointInAreas = function(areas,x0,y0,maxh,maxw) {
+        while(true) {
+            var x = x0 + Math.random()*maxh;
+            var y = y0 + Math.random()*maxw;
+            for(var key in areas) {
+                if(pointInPolygon(x,y,areas[key])) {
+                    return [x,y];
+                }
+            }
+        }
+    };
+    
+    this.gen_in_areas = function(n, areas) {
+        var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
+        var maxw = MAP_FRAME['bottomright'][1] - MAP_FRAME['topleft'][1];
+        var trips = [];
+
+        for(var i=0; i<n; i++){
+            trips.push([
+                randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw),
+                randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw)
+            ]);
+        }
+        return trips;
+    };
+
+    this.gen_single_in_areas = function(areas) {
+        var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
+        var maxw = MAP_FRAME['bottomright'][1] - MAP_FRAME['topleft'][1];
+        return [
+            randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw),
+            randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw)
+        ];
+    };
     
     this.gen_uniform = function(n){
         var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
@@ -21,14 +88,14 @@ var GenTrips = function(topleft,bottomright){
                      [MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw]
                      ]);
         }
-        return trips
-    }
+        return trips;
+    };
     
     this.gen_single_uniform = function(){
         var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
         var maxw = MAP_FRAME['bottomright'][1] - MAP_FRAME['topleft'][1];
         return [[MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw],[MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw]];
-    }    
+    };
     
     return this;
 }

@@ -289,7 +289,8 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                 }
                 layer.model = $scope.path[id];
             } else {
-                $scope.area['a' + layer._leaflet_id] = {
+                var id = 'a' + layer._leaflet_id;
+                $scope.area[id] = {
                     id: layer._leaflet_id,
                     type: type,
                     name: '',
@@ -356,6 +357,9 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         $scope.stationMarker = [];
         
         $scope.map.controls.edit.featureGroup.eachLayer(function(layer){
+            if(layer.model == undefined) {
+                return;
+            }
             if(layer.model.type == 'polyline') {
                 for(l in layer._latlngs){
                     var path_id = 'p' + layer._leaflet_id;
@@ -459,7 +463,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         
         $timeout(genTrips, 1000);
     };    
-        
+
     var genTrips = function(){
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
@@ -489,8 +493,12 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
 
             for(var t = 0; t<trips_number; t++){
                 //var polyline = L.polyline(trips[t], {weight: 1, color: 'red', clickable: false}).addTo(map);   
-                
-                var trip = new GenTrips(topleft, bottomright).gen_single_uniform();
+
+                if(isEmpty($scope.area)) {
+                    var trip = new GenTrips(topleft, bottomright).gen_single_uniform();
+                } else {
+                    var trip = new GenTrips(topleft, bottomright).gen_single_in_areas($scope.area);
+                }
                 //var trip = [[13.72334441560363,100.50557294712797],[13.66679171399049,100.60976122866941]];
                 var polyline = L.polyline(trip, {weight: 1, opacity: 0.6, color: 'blue', clickable: false}).addTo(layers.overlays.trips_layer);                   
                 
@@ -607,4 +615,13 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
     $scope.toggleModal = function() {
         $scope.modalShown = !$scope.modalShown;
     };    
+
+    function isEmpty(obj) {
+        for(var prop in obj) {
+            if(obj.hasOwnProperty(prop))
+                return false;
+        }
+        
+        return true;
+    }
 });

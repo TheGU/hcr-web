@@ -1,12 +1,16 @@
 // Magic. Do not change.
 var DIST_SCALE = 0.009041543572655762;   
 var DIST_RATIO = 2.0/0.140961;
-var INFTY = 10000;
-var MAX_DISTANCE = 10000;
+var INFTY = 100000;
+var MAX_DISTANCE = 100000;
 
 var distance = function(x1, y1, x2, y2){
-    return(1.0*Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
+    //    return(1.0*Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
+
+    return google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(x1,y1),
+                                                                 new google.maps.LatLng(x2,y2))/1000.0;
 };
+
 
 var pointInPolygon = function(x,y,polyPoints){
     if(polyPoints._polygon == undefined) {
@@ -87,7 +91,7 @@ var GenTrips = function(topleft,bottomright){
 
 var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,max_walk_distance, callback){
 
-    var dbound = max_walk_distance * DIST_SCALE;
+    var dbound = max_walk_distance;
     
     var network = {};
     var node_count = 0;
@@ -148,7 +152,9 @@ var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,
                 network[i].lat,
                 network[i].lng,
                 network[j].lat,
-                network[j].lng); 
+                network[j].lng);
+
+            console.log(i + ' - ' + j + ' = ' +dist);
           
             if((dbound == 0) || (dist < dbound)){
                 if((j in network[i].connected) && (dist > network[i].connected[j]))continue;

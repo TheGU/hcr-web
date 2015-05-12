@@ -552,6 +552,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
             var drawMap = function(trips_data){
                 leafletData.getLayers().then(function (layers) {
                     layers.overlays.trips_layer.clearLayers();
+                    layers.overlays.switch_layer.clearLayers();
                     for(var i in trips_data){
                         switch_trips[i].addTo(layers.overlays.switch_layer);
                     }

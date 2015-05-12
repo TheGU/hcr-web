@@ -9,35 +9,13 @@ var distance = function(x1, y1, x2, y2){
 };
 
 var pointInPolygon = function(x,y,polyPoints){
-    if(polyPoints._minMaxCache == undefined) {
-        var minx = polyPoints._latlngs[0].lat;
-        var miny = polyPoints._latlngs[0].lng;
-        var maxx = minx;
-        var maxy = miny;
-        for(var i = 0; i< polyPoints._latlngs.length; i++) {
-            if(polyPoints._latlngs[i].lat < minx) {
-                minx = polyPoints._latlngs[i].lat;
-            }
-            if(polyPoints._latlngs[i].lat > maxx) {
-                maxx = polyPoints._latlngs[i].lat;
-            }
-            if(polyPoints._latlngs[i].lng < miny) {
-                miny = polyPoints._latlngs[i].lng;
-            }
-            if(polyPoints._latlngs[i].lng > maxy) {
-                maxy = polyPoints._latlngs[i].lng;
-            }
-        }
-        polyPoints._minMaxCache = [minx,miny,maxx,maxy];
-    } else {
-        var minx = polyPoints._minMaxCache[0];
-        var miny = polyPoints._minMaxCache[1];
-        var maxx = polyPoints._minMaxCache[2];
-        var maxy = polyPoints._minMaxCache[3];
+    if(polyPoints._polygon == undefined) {
+        polyPoints._polygon = new google.maps.Polygon({ paths: polyPoints._latlngs });
     }
-
-    return ((x >= minx) && (x <= maxx) &&
-            (y >= miny) && (y <= maxy));
+    var polygon = polyPoints._polygon;
+    var pt = new google.maps.LatLng(x,y);
+    
+    return google.maps.geometry.poly.containsLocation(pt, polygon);
 };
 
 var GenTrips = function(topleft,bottomright){

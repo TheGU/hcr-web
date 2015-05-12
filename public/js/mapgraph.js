@@ -25,8 +25,15 @@ var GenTrips = function(topleft,bottomright){
         while(true) {
             var x = x0 + Math.random()*maxh;
             var y = y0 + Math.random()*maxw;
+            var highestProb = 0;
             for(var key in areas) {
-                if(pointInPolygon(x,y,areas[key])) {
+                var area = areas[key];
+                if(pointInPolygon(x,y,area)) {
+                    if(area.acceptingProbability > highestProb) {
+                        highestProb = area.acceptingProbability;
+                    }
+                }
+                if(Math.random() <= highestProb) {
                     return [x,y];
                 }
             }

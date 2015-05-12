@@ -254,6 +254,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     id: polygon._leaflet_id,
                     type: value.type,
                     name: value.name,
+                    acceptingProbability: value.acceptingProbability,
                     options: polygon.options,
                     _latlngs: polygon._latlngs
                 };          
@@ -294,6 +295,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     id: layer._leaflet_id,
                     type: type,
                     name: '',
+                    acceptingProbability: 1.0,
                     options: layer.options,
                     _latlngs: layer._latlngs
                 };

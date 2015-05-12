@@ -8,8 +8,60 @@ var distance = function(x1, y1, x2, y2){
     return(1.0*Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
 };
 
+var pointInPolygon = function(x,y,polyPoints){
+    if(polyPoints._polygon == undefined) {
+        polyPoints._polygon = new google.maps.Polygon({ paths: polyPoints._latlngs });
+    }
+    var polygon = polyPoints._polygon;
+    var pt = new google.maps.LatLng(x,y);
+    
+    return google.maps.geometry.poly.containsLocation(pt, polygon);
+};
+
 var GenTrips = function(topleft,bottomright){
     var MAP_FRAME = {'topleft':topleft,'bottomright':bottomright};
+
+    var randomPointInAreas = function(areas,x0,y0,maxh,maxw) {
+        while(true) {
+            var x = x0 + Math.random()*maxh;
+            var y = y0 + Math.random()*maxw;
+            var highestProb = 0;
+            for(var key in areas) {
+                var area = areas[key];
+                if(pointInPolygon(x,y,area)) {
+                    if(area.acceptingProbability > highestProb) {
+                        highestProb = area.acceptingProbability;
+                    }
+                }
+                if(Math.random() <= highestProb) {
+                    return [x,y];
+                }
+            }
+        }
+    };
+    
+    this.gen_in_areas = function(n, areas) {
+        var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
+        var maxw = MAP_FRAME['bottomright'][1] - MAP_FRAME['topleft'][1];
+        var trips = [];
+
+        for(var i=0; i<n; i++){
+            trips.push([
+                randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw),
+                randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw)
+            ]);
+        }
+        return trips;
+    };
+
+    this.gen_single_in_areas = function(areas) {
+        var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
+        var maxw = MAP_FRAME['bottomright'][1] - MAP_FRAME['topleft'][1];
+        return [
+            randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw),
+            randomPointInAreas(areas,MAP_FRAME['bottomright'][0],MAP_FRAME['topleft'][1],maxh,maxw)
+        ];
+    };
     
     this.gen_uniform = function(n){
         var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
@@ -21,14 +73,14 @@ var GenTrips = function(topleft,bottomright){
                      [MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw]
                      ]);
         }
-        return trips
-    }
+        return trips;
+    };
     
     this.gen_single_uniform = function(){
         var maxh = MAP_FRAME['topleft'][0] - MAP_FRAME['bottomright'][0];
         var maxw = MAP_FRAME['bottomright'][1] - MAP_FRAME['topleft'][1];
         return [[MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw],[MAP_FRAME['bottomright'][0] + Math.random()*maxh, MAP_FRAME['topleft'][1] + Math.random()*maxw]];
-    }    
+    };
     
     return this;
 }
@@ -97,7 +149,8 @@ var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,
                 network[i].lng,
                 network[j].lat,
                 network[j].lng); 
-            if(dist < dbound){
+          
+            if((dbound == 0) || (dist < dbound)){
                 if((j in network[i].connected) && (dist > network[i].connected[j]))continue;
                 network[i].connected[j] = dist;
                 network[j].connected[i] = dist;               

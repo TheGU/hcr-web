@@ -252,13 +252,9 @@
                 </table>                
             </div>
 
-        </div>
-
-        <div class="row" ng-cloak class="ng-cloak">
             <div ng-if="editArea">
-                Area : {{ currentArea.name || currentArea.id }}
                 <h3>
-                    Path : 
+                    Area : 
                     <span style="color:{{ currentArea.options.color }};">{{ currentArea.name || currentArea.id }}</span>
                 </h3>
                 <div class="row form-group">                   
@@ -287,8 +283,8 @@
                     </div> 
                     <div class="col-sm-4">
                       <div class="form-group">
-                        <label for="input-color">Density</label>
-                        <input type="text" class="form-control" id="input-density" placeholder="0-100000" ng-model="currentArea.density">
+                        <label for="input-color">Accepting probability</label>
+                        <input type="text" class="form-control" id="input-density" placeholder="0.0-1.0" ng-model="currentArea.acceptingProbability">
                       </div>
                     </div>                    
                 </div> 
@@ -319,7 +315,7 @@
 
 
     <script src="/js/vendor/bootstrap-without-jquery.min.js"></script>
-    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false&libraries=geometry"></script>
     <script src="/js/vendor/angular.min.js"></script>
     <script src="/js/vendor/angular-sanitize.min.js"></script>
     <script src="/js/vendor/leaflet.js"></script>

@@ -474,7 +474,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         
         var dist_bound = MAX_DISTANCE;        
         if(max_walk_distance>0)
-            dist_bound = max_walk_distance * DIST_SCALE;
+            dist_bound = max_walk_distance;
         
         var network = $scope.network;
         var total_trips = trips_number;

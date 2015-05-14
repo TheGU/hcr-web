@@ -154,7 +154,7 @@ var GenNetwork = function(path,canal_adv_factor,rail_adv_factor, brt_adv_factor,
                 network[j].lat,
                 network[j].lng);
 
-            console.log(i + ' - ' + j + ' = ' +dist);
+            //console.log(i + ' - ' + j + ' = ' +dist);
           
             if((dbound == 0) || (dist < dbound)){
                 if((j in network[i].connected) && (dist > network[i].connected[j]))continue;

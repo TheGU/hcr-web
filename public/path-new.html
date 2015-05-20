@@ -136,7 +136,7 @@
                     <strong>Rail Adv Factor</strong> : {{ info.rail_adv_factor }}, 
                     <strong>Canal Adv Factor</strong> : {{ info.canal_adv_factor }}                 
                 </div>
-                <div ng-if="gen_status && state!=='done'">
+                <div ng-if="gen_status && (state==='loading' || state==='done')">
                     <strong>Status</strong> : <span ng-if="state==='loading'"><i class="fa fa-cog fa-spin"></i></span> {{ gen_status }}
                     <div class="progress">
                       <div class="progress-bar" role="progressbar" aria-valuenow="{{ gen_status_progress }}" 

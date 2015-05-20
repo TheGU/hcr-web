@@ -469,6 +469,8 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
     };    
 
     var genTrips = function(){
+        $scope.gen_status = "Create trips data & Calculate best travel option for each trip ...";
+        
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
         var trips_number = $scope.info.gen_trips_number;
@@ -487,8 +489,6 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
 
         var switch_trips = [];
         var remain_trips = [];
-        
-        $scope.gen_status = "Create trips data & Calculate best travel option for each trip ...";
         
         //$scope.trips = new GenTrips(topleft, bottomright).gen_uniform(trips_number);
         
@@ -540,7 +540,8 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     layers.overlays.trips_layer.removeLayer(polyline_best_exit);
                 }
                 
-                $scope.gen_status_progress = 20 + Math.round((t/trips_number)*75); // to display 20-95% as progress last 5% for drawing graph
+                
+                   $scope.gen_status_progress = 20 + Math.round((t/trips_number)*75); // to display 20-95% as progress last 5% for drawing graph
             }      
             
             

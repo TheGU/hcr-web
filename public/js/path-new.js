@@ -409,7 +409,6 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
     
     // Generate Part =====================================
     $scope.gen_status = "";
-    $scope.gen_status_progress = 0;
     $scope.trips = [];
     $scope.network = {};
     $scope.tripResult = [];
@@ -444,7 +443,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         });         
         
         $scope.gen_status = "Checking data ...";   
-        $scope.gen_status_progress = 10;
+        
         $timeout(genNetwork, 1000);
     };
     
@@ -464,13 +463,10 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
         $scope.map.controls.edit.featureGroup.bringToFront();
         updateMarker();
         
-        $scope.gen_status_progress = 20;
         $timeout(genTrips, 1000);
     };    
 
     var genTrips = function(){
-        $scope.gen_status = "Create trips data & Calculate best travel option for each trip ...";
-        
         var topleft = [$scope.map.bounds.northEast.lat,$scope.map.bounds.southWest.lng];
         var bottomright = [$scope.map.bounds.southWest.lat,$scope.map.bounds.northEast.lng];
         var trips_number = $scope.info.gen_trips_number;
@@ -489,6 +485,8 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
 
         var switch_trips = [];
         var remain_trips = [];
+        
+        $scope.gen_status = "Create trips data & Calculate best travel option for each trip ...";
         
         //$scope.trips = new GenTrips(topleft, bottomright).gen_uniform(trips_number);
         
@@ -540,8 +538,6 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     layers.overlays.trips_layer.removeLayer(polyline_best_exit);
                 }
                 
-                
-                   $scope.gen_status_progress = 20 + Math.round((t/trips_number)*75); // to display 20-95% as progress last 5% for drawing graph
             }      
             
             
@@ -571,7 +567,6 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
             drawMap(switch_trips);        
             $scope.state = 'done';
             $scope.gen_status = "Done";            
-            $scope.gen_status_progress = 100;
         });
     };
     

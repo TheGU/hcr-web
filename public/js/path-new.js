@@ -43,7 +43,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
             brt_adv_factor: 6,
             rail_adv_factor: 6,
             canal_adv_factor: 3,
-            max_walk_distance: 1            
+            max_walk_distance: 0
         },
         map: {
             center: {},

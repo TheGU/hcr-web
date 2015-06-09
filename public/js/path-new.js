@@ -40,10 +40,10 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
             start_city:'',
             start_city_data: null,
             gen_trips_number: 1000,
-            brt_adv_factor: 3,
-            rail_adv_factor: 3,
+            brt_adv_factor: 6,
+            rail_adv_factor: 6,
             canal_adv_factor: 3,
-            max_walk_distance: 0            
+            max_walk_distance: 1            
         },
         map: {
             center: {},
@@ -91,12 +91,12 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     trips_layer: {
                         "name": "Trip outside of network",
                         "type": "group",
-                        "visible": true
+                        "visible": false
                     },
                     switch_layer: {
                         "name": "Hybrid trip",
                         "type": "group",
-                        "visible": false
+                        "visible": true
                     }                  
                 }                
             },
@@ -281,7 +281,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     id: layer._leaflet_id,
                     type: type,
                     name: '',
-                    station_type: 'canal',
+                    station_type: 'rail',
                     options: layer.options,
                     _latlngs: layer._latlngs
                 };

@@ -26,7 +26,7 @@ app.use(bodyParser.json()); // parse application/json
 
 // Routes =================
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/public/index.html');
+    res.sendFile(__dirname + '/public/path.html');
 });
 
 app.get('/about', function (req, res) {
@@ -34,15 +34,15 @@ app.get('/about', function (req, res) {
 });
 
 app.get('/path', function (req, res) {
-    res.sendFile(__dirname + '/public/path-new.html');
+    res.sendFile(__dirname + '/public/path.html');
 });
 
 app.get('/path/:pathId', function (req, res) {
-    res.sendFile(__dirname + '/public/path-new.html');
+    res.sendFile(__dirname + '/public/path.html');
 });
 
 app.get('/poll', function (req, res) {
-    res.sendFile(__dirname + '/public/poll-new.html');
+    res.sendFile(__dirname + '/public/poll.html');
 });
 
 app.get('/poll-submit', function (req, res) {

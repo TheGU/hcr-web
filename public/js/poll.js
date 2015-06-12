@@ -1,138 +1,217 @@
-angular.module('hcr-poll-collector', ['google-maps'.ns()])
-    .controller('PollController', function ($scope, $filter, $log, $timeout, $http) {
+/**
+ * Created by TheGU on 2015-01-31.
+ */
+angular.module('hcr-poll-collector', ['leaflet-directive'])
+    .controller('PollController', function ($scope, $filter, $log, $timeout, $http, leafletData) {
 
         $scope.status_msg = "";
         $scope.savingForm = false;
         $scope.poll = {
-            poll_date: $filter('date')(new Date, 'yyyy-MM-dd')
-        };
-
-        $scope.map = {
-            control: {},
-            version: "uknown",
-            showTraffic: true,
-            showBicycling: false,
-            showWeather: false,
-            showHeat: false,
-            center: {
-                latitude: 13.761061514752807,
-                longitude: 100.54258346557617
+            poll_date: $filter('date')(new Date, 'yyyy-MM-dd'),
+            poll_6_1_start: {type: 'Point', coordinates: [], description: ''},
+            poll_6_1_stop: {type: 'Point', coordinates: [], description: ''}
+        }; 
+    
+        var local_icons = {
+            defaultIcon: {},
+            startIcon: {
+                iconUrl: 'http://www.google.com/mapfiles/dd-start.png',
+                shadowUrl: 'http://www.google.com/mapfiles/shadow50.png',
+                iconSize:     [20, 34], // size of the icon
+                shadowSize:   [50, 64], // size of the shadow
+                iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+                shadowAnchor: [4, 62],  // the same for the shadow
+                popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
             },
-            options: {
-                streetViewControl: true,
-                panControl: true,
-                scrollwheel: true,
-                maxZoom: 20,
-                minZoom: 3
-            },
-            zoom: 12,
-            dragging: false,
-            bounds: {},
-            events: {
-                tilesloaded: function (map, eventName, originalEventArgs) {
-
+            endLeafIcon: {
+                iconUrl: 'http://www.google.com/mapfiles/dd-end.png',
+                shadowUrl: 'http://www.google.com/mapfiles/shadow50.png',
+                iconSize:     [38, 95],
+                shadowSize:   [50, 64],
+                iconAnchor:   [22, 94],
+                shadowAnchor: [4, 62],
+                popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+            }
+        }    
+    
+        angular.extend($scope, {
+            map : {
+                center: {
+                    lat: 13.751390740782975,
+                    lng: 100.62652587890625,
+                    zoom: 11
                 },
-                click: function (mapModel, eventName, originalEventArgs) {
-
+                layers: {
+                    baselayers: {
+                        googleRoadmap: {
+                            name: 'Google Streets',
+                            layerType: 'ROADMAP',
+                            type: 'google'
+                        },
+                        googleTerrain: {
+                            name: 'Google Terrain',
+                            layerType: 'TERRAIN',
+                            type: 'google'
+                        },
+                        googleHybrid: {
+                            name: 'Google Hybrid',
+                            layerType: 'HYBRID',
+                            type: 'google'
+                        }
+                    }
                 },
-                dragend: function () {
-                    self = this;
+                markers : {},
+                defaults: {
+                    scrollWheelZoom: true
                 }
             }
+        });
+
+       var bestFitZoom = function(){
+            var bounds = L.latLngBounds(
+                [$scope.map.markers.stop_marker.lat, $scope.map.markers.stop_marker.lng], 
+                [$scope.map.markers.start_marker.lat, $scope.map.markers.start_marker.lng]
+            );
+            leafletData.getMap().then(function(map) {
+                map.invalidateSize();
+                map.fitBounds(bounds);
+            });
         };
+    
+        $scope.$on("leafletDirectiveMap.geojsonClick", function(ev, featureSelected, leafletEvent) {
+            geoClick(featureSelected, leafletEvent);
+        });
 
-
-        // Marker control --------------------------
-        $scope.start_marker = {};
-        $scope.$watchCollection("start_marker.coords", function (newVal, oldVal) {
-            if (_.isEqual(newVal, oldVal) || _.isEmpty(newVal))
-                return;
-            $scope.poll.poll_6_1_start.coordinates = [ newVal.longitude, newVal.latitude ];
-            $http.get('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + newVal.latitude + ',' + newVal.longitude + '&sensor=true').success(function (data) {
-                $log.log(data);
-                $scope.start_marker.description = data.results[0].formatted_address;
-            })
+        $scope.setMarkerStatus = 0;
+        $scope.setStartMarkerStatus = false;
+        $scope.setStopMarkerStatus = false;
+        $scope.$on("leafletDirectiveMap.click", function(event, args){
+            var leafEvent = args.leafletEvent;
+            if ($scope.setStartMarkerStatus){
+                $scope.map.markers.start_marker = {
+                    lat: leafEvent.latlng.lat,
+                    lng: leafEvent.latlng.lng,
+                    message: "Start",
+                    focus: true,
+                    draggable: true
+                };
+                $scope.poll.poll_6_1_start.coordinates = [ leafEvent.latlng.lng, leafEvent.latlng.lat ];
+                $http.get('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + leafEvent.latlng.lat + ',' + leafEvent.latlng.lng + '&sensor=true').success(function (data) {
+                    $log.log(data);
+                    $scope.poll.poll_6_1_start.description = data.results[0].formatted_address;
+                })
                 .error(function (data) {
                     $log.log('Error: ' + data);
-                });
-        });
-        $scope.setStartMarker = function () {
-            $scope.poll.poll_6_1_start = {type: 'Point', coordinates: []};
-            $scope.start_marker = {
-                id: 0,
-                description: '',
-                coords: {
-                    latitude: $scope.map.center.latitude,
-                    longitude: $scope.map.center.longitude
-                },
-                icon: "http://www.google.com/mapfiles/dd-start.png",
-                options: {
-                    draggable: true,
-                    labelContent: "จุดเริ่มต้น",
-                    labelAnchor: "-15 30",
-                    labelClass: "poll-marker-labels"
-                },
-                events: {
-                    dragend: function (marker, eventName, args) {
-                        var lat = marker.getPosition().lat();
-                        var lon = marker.getPosition().lng();
-                        $log.log('start marker dragend ' + lat + ',' + lon);
-                    }
-                }
-            };
-        };
-
-        $scope.stop_marker = {};
-        $scope.$watchCollection("stop_marker.coords", function (newVal, oldVal) {
-            if (_.isEqual(newVal, oldVal) || _.isEmpty(newVal))
-                return;
-            $scope.poll.poll_6_1_stop.coordinates = [ newVal.longitude, newVal.latitude ];
-            $http.get('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + newVal.latitude + ',' + newVal.longitude + '&sensor=true').success(function (data) {
-                $log.log(data);
-                $scope.stop_marker.description = data.results[0].formatted_address;
-            })
+                });                
+            }
+            
+            if ($scope.setStopMarkerStatus){
+                $scope.map.markers.stop_marker = {
+                    lat: leafEvent.latlng.lat,
+                    lng: leafEvent.latlng.lng,
+                    message: "Stop",
+                    focus: true,
+                    draggable: true
+                };
+                $scope.poll.poll_6_1_stop.coordinates = [ leafEvent.latlng.lng, leafEvent.latlng.lat ];
+                $http.get('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + leafEvent.latlng.lat + ',' + leafEvent.latlng.lng + '&sensor=true').success(function (data) {
+                    $log.log(data);
+                    $scope.poll.poll_6_1_stop.description = data.results[0].formatted_address;
+                })
                 .error(function (data) {
                     $log.log('Error: ' + data);
-                });
+                });                
+            }            
         });
-        $scope.setStopMarker = function () {
-            $scope.poll.poll_6_1_stop = {type: 'Point', coordinates: []};
-            $scope.stop_marker = {
-                id: 1,
-                description: '',
-                coords: {
-                    latitude: $scope.map.center.latitude,
-                    longitude: $scope.map.center.longitude
-                },
-                icon: "http://www.google.com/mapfiles/dd-end.png",
-                options: {
-                    draggable: true,
-                    labelContent: "จุดสิ้นสุด",
-                    labelAnchor: "-15 30",
-                    labelClass: "poll-marker-labels"
-                },
-                events: {
-                    dragend: function (marker, eventName, args) {
-                        var lat = marker.getPosition().lat();
-                        var lon = marker.getPosition().lng();
-                        $log.log('stop marker dragend ' + lat + ',' + lon);
-                    }
+
+        $scope.submitStartMarker = function () {
+            $scope.setMarkerStatus = 1
+            $scope.setStartMarkerStatus = false;
+            $scope.map.center = {
+                    lat: 13.751390740782975,
+                    lng: 100.62652587890625,
+                    zoom: 11
                 }
-            };
+            drawMap();
         };
+        $scope.submitStopMarker = function () {
+            $scope.setMarkerStatus = 2
+            $scope.setStopMarkerStatus = false;
+            $scope.map.center = {
+                    lat: 13.751390740782975,
+                    lng: 100.62652587890625,
+                    zoom: 11
+                }
+            var mainContainer = angular.element(document.getElementsByClassName("map-container"));
+            mainContainer.css('height', '200px');
+            mainContainer.css('min-height', '200px');
+            angular.element(document.getElementsByClassName("leaflet-google-layer")).css('height', '200px');
+            bestFitZoom();
+        };    
+    
+        function styleDefault(feature) {
+            return {
+                fillColor: "green",
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.3
+            };
+        }
+
+        var last_layer = null;
+        function geoClick(feature, leafletEvent) {
+            var layer = leafletEvent.target;
+            if (last_layer)
+                last_layer.setStyle(styleDefault());
+            last_layer = layer;
+
+            layer.setStyle({
+                weight: 5,
+                color: '#666',
+                fillColor: 'white',
+                fillOpacity: 0
+            });
+            layer.bringToFront();
+            leafletData.getMap().then(function(map) {
+                map.fitBounds(layer.getBounds());
+            });
+
+            if($scope.setMarkerStatus === 0)
+                $scope.setStartMarkerStatus = true;
+            else if($scope.setMarkerStatus === 1)
+                $scope.setStopMarkerStatus = true;
+            
+            delete $scope.geojson;
+        }
+
+        // Get the countries geojson data from a JSON
+        var drawMap = function(){
+            $http.get("Bangkok.json").success(function(data, status) {
+                angular.extend($scope, {
+                    geojson: {
+                        data: data,
+                        style: styleDefault,
+                        resetStyleOnMouseout: false
+                    }
+                });
+            });
+        };
+        drawMap();
 
         // Submit and cancel form -------------------------
         $scope.submitPoll = function () {
             $scope.status_msg = "กำลังบันทึกข้อมูล ... ";
-            
+
             $scope.savingForm = true;
-            
+
             $log.log($scope.poll);
             $http.post('/api/poll', $scope.poll)
                 .success(function (data) {
                     $scope.resetPoll();
                     $scope.status = data;
-                
+
                     $log.log(data);
                     $scope.status_msg = "บันทึกเสร็จเรียบร้อย";
                 })

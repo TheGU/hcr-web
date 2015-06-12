@@ -1,6 +1,6 @@
 {
   "name": "HCR Web Server",
   "description": "Simulator and Poll Application",
-  "repository": "https://bitbucket.org/TheGU/hcr-web",
+  "repository": "https://github.com/TheGU/hcr-web",
   "keywords": ["node", "express", "static"]
 }

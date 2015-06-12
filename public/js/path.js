@@ -227,6 +227,21 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
             $scope.map.bounds = data.data.map.bounds;
             $scope.map.center = data.data.map.center;
             $scope.info = data.data.info;
+            angular.forEach(data.data.area, function(value, key) {
+                var polygon = L.polygon(value._latlngs, value.options);
+                drawnItems.addLayer(polygon);
+                var id = 'a' + polygon._leaflet_id;
+                $scope.area[id] = {
+                    id: polygon._leaflet_id,
+                    type: value.type,
+                    name: value.name,
+                    acceptingProbability: value.acceptingProbability,
+                    options: polygon.options,
+                    _latlngs: polygon._latlngs
+                };          
+                polygon.model = $scope.area[id];
+                polygon.on('click', layerClickHandler);
+            });            
             angular.forEach(data.data.path, function(value, key) {
                 var polyline = L.polyline(value._latlngs, value.options);
                 drawnItems.addLayer(polyline);
@@ -245,22 +260,9 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                 }
                 polyline.model = $scope.path[id];
                 polyline.on('click', layerClickHandler);
+                polyline.bringToFront();
             });
-            angular.forEach(data.data.area, function(value, key) {
-                var polygon = L.polygon(value._latlngs, value.options);
-                drawnItems.addLayer(polygon);
-                var id = 'a' + polygon._leaflet_id;
-                $scope.area[id] = {
-                    id: polygon._leaflet_id,
-                    type: value.type,
-                    name: value.name,
-                    acceptingProbability: value.acceptingProbability,
-                    options: polygon.options,
-                    _latlngs: polygon._latlngs
-                };          
-                polygon.model = $scope.area[id];
-                polygon.on('click', layerClickHandler);
-            });
+          
             updateMarker();       
         })
         .error(function (data) {

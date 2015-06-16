@@ -66,7 +66,7 @@ app.post('/api/poll', function (req, res) {
 });
 
 var shortener = function(seq) {
-    //https://github.com/juanmaia
+    var new_str = "";
     var chars = "abcdefghijklmnopqrstuvxzwyABCDEFGHIJKLMNOPQRSTUVXZWY1234567890";
     while (seq > 0) {
         var k = seq % chars.length;
@@ -75,10 +75,11 @@ var shortener = function(seq) {
             seq--;
         }
         seq = Math.floor(seq / chars.length);
-        str = chars[k - 1];
+        new_str += chars[k - 1];
     }
-    return str;
+    return new_str;
 };
+
 app.get('/api/path/:pathId', function (req, res) {
     Path.findOne({
         "pathId": req.params.pathId

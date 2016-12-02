@@ -9,7 +9,7 @@ var sc = require('./schema');
 
 // Config =================
 app.set('port', (process.env.PORT || 5000));
-var dbUri = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost:27017/hcr';
+var dbUri = process.env.MONGOLAB_URI || process.env.MONGODB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost:27017/hcr';
 
 mongoose.connect(dbUri); // connect to mongoDB database
 

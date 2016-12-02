@@ -573,7 +573,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     } 
                 });  
             };
-            drawMap(switch_trips);        
+            drawMap(remain_trips);        
             $scope.state = 'done';
             $scope.gen_status = "Done";            
         });

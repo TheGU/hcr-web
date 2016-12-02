@@ -91,12 +91,12 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     trips_layer: {
                         "name": "Trip outside of network",
                         "type": "group",
-                        "visible": false
+                        "visible": true
                     },
                     switch_layer: {
                         "name": "Hybrid trip",
                         "type": "group",
-                        "visible": true
+                        "visible": false
                     }                  
                 }                
             },
@@ -573,7 +573,7 @@ myApp.controller('MapController', function ($scope, $sce, $filter, $log, $timeou
                     } 
                 });  
             };
-            drawMap(remain_trips);        
+            drawMap(switch_trips);        
             $scope.state = 'done';
             $scope.gen_status = "Done";            
         });

@@ -1,7 +1,7 @@
 {
   "name": "hcr-web",
   "main": "index.js",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "authors": [
     "Pattapong J. <neotrez@gmail.com>"
   ],

@@ -1,6 +1,6 @@
 {
   "name": "hcr-web",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Web application for HCR project",
   "author": "Pattapong Jantarach, Jittat Fakcharoenphol",
   "main": "index.js",
